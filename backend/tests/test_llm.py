@@ -1,3 +1,5 @@
+import pytest
+from app.config import settings
 from app.categorise import llm
 
 
@@ -40,3 +42,53 @@ def test_network_error_does_not_crash(monkeypatch, tmp_path):
 
     monkeypatch.setattr(llm, "_ask_llm", broken)
     assert llm.classify_merchants(["Somewhere"]) == {"Somewhere": None}
+
+
+# Tests call real OpenAI endpoint
+
+needs_azure = pytest.mark.skipif(
+    not (settings.azure_openai_api_key and settings.azure_openai_endpoint),
+    reason="Azure OpenAI credentials not set in backend/.env",
+)
+
+
+@pytest.mark.integration
+@needs_azure
+def test_real_api_answers_are_valid_codes_or_none(monkeypatch, tmp_path):
+    monkeypatch.setattr(llm, "CACHE_FILE", tmp_path / "cache.json")
+
+    result = llm.classify_merchants(["Corner Bakery", "Weird Place"])
+
+    assert set(result) == {"Corner Bakery", "Weird Place"}
+    # Whatever the model says, only real division codes (or None) get through
+    assert all(code is None or code in llm.DIVISIONS for code in result.values())
+    # A bakery is food or eating out
+    assert result["Corner Bakery"] in {"01", "11"}
+
+
+@pytest.mark.integration
+@needs_azure
+def test_real_bowling_alley_is_recreation(monkeypatch, tmp_path):
+    monkeypatch.setattr(llm, "CACHE_FILE", tmp_path / "cache.json")
+
+    result = llm.classify_merchants(["Bowling Alley"])
+
+    assert result["Bowling Alley"] == "09"
+
+
+@pytest.mark.integration
+@needs_azure
+def test_real_cached_shops_are_not_asked_again(monkeypatch, tmp_path):
+    monkeypatch.setattr(llm, "CACHE_FILE", tmp_path / "cache.json")
+    calls = []
+    real_ask = llm._ask_llm
+
+    def spy(names):
+        calls.append(names)
+        return real_ask(names)  # still the real API
+
+    monkeypatch.setattr(llm, "_ask_llm", spy)
+    llm.classify_merchants(["Bowling Alley"])
+    llm.classify_merchants(["Bowling Alley"])
+
+    assert len(calls) == 1  # second time came from the cache

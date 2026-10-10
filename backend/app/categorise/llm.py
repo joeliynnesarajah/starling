@@ -27,7 +27,12 @@ DIVISIONS = {
 
 def _llm_enabled() -> bool:
     # Only run if the team switched it on and the Azure key is set
-    return bool(getattr(settings, "use_llm", False) and getattr(settings, "azure_openai_api_key", None))
+    enabled = bool(
+        getattr(settings, "use_llm", False)
+        and getattr(settings, "azure_openai_api_key", None)
+    )
+    LOGGER.info("LLM enabled: %s", enabled)
+    return enabled
 
 
 def _load_cache() -> dict:
@@ -91,11 +96,12 @@ def classify_merchants(merchants: list[str]) -> dict[str, str | None]:
             answers = _ask_llm(new_names)
         except Exception as e:
             LOGGER.exception(f"LLM categorisation failed: {e}")
-            answers = {}  # don't crash the demo
-        for name in new_names:
-            code = answers.get(name)
-            # Only accept real category codes; anything else becomes None
-            cache[name] = code if code in DIVISIONS else None
-        _save_cache(cache)
+            answers = None  # don't crash, but don't cache the failure
+        if answers is not None:
+            for name in new_names:
+                code = answers.get(name)
+                cache[name] = code if code in DIVISIONS else None
+            _save_cache(cache)
 
-    return {m: cache.get(m) for m in merchants}
+    return {m: cache.get(m) for m in merchants} 
+   

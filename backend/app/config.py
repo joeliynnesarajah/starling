@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     # Azure OpenAI (used by app/services/openai.py)
     azure_openai_api_key: str = ""
     azure_openai_endpoint: str = ""
-    azure_openai_deployment: str = "gpt-4o-mini"  # the model deployment name in Azure
+    azure_openai_deployment: str = ""  # the model deployment name in Azure
     
     # Interest rate paid on the savings Space, as a decimal (0.03 = 3%).
     # TODO: agree a figure as a team and say where it came from in the pitch.
