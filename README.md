@@ -29,6 +29,8 @@ Your savings lose value at *your* rate, and no bank tells you what that is.
 
 ## How it works
 
+![How it works: Personal inflation calculation](images/how-it-works.png)
+
 1. Pull transactions from Engine.
 2. Map each transaction to one of the 12 official ONS spending categories (COICOP divisions), using its merchant category code (MCC), then merchant-name rules as a fallback.
 3. Work out the share of spending in each category over the last 12 months. These are your **personal weights**.
@@ -371,4 +373,4 @@ Transfers, cash withdrawals and incoming payments are excluded and reported in t
 
 ---
 
-*Built in 48 hours by four people and a lot of coffee, whose price rose 0.3% while we wrote this README.* ☕
+*Built in 48 hours by four people and a lot of M%S Cookies, whose price rose 0.3% while we wrote this README.* ☕
