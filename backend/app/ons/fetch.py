@@ -15,28 +15,21 @@ from datetime import datetime
 
 _RETRIES = 0
 
-async def get_latest_version() -> int:
+def get_latest_version() -> int:
     """GET {base}/datasets/cpih01 and return the latest version number."""
-    import httpx
-
-async def get_latest_version() -> int:
-    """GET {base}/datasets/cpih01 and return the latest version number."""
+    
     url = f"{settings.ons_base_url}/datasets/cpih01"
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.get(url)
-            response.raise_for_status()
-            data = response.json()
-
-        return int(data["links"]["latest_version"]["id"])
-    
+        response = httpx.get(url, timeout=30.0)
+        response.raise_for_status()
+        return int(response.json()["links"]["latest_version"]["id"])
     except (httpx.HTTPError, KeyError, ValueError) as e:
         raise RuntimeError(f"Failed to get latest ONS version from {url}: {e}") from e
 
 
-
 def parse_ons_month(label: str) -> str:
     """Convert an ONS time label like "Oct-11" into "2011-10"."""
+
     date_object = datetime.strptime(label, "%b-%y")
     return date_object.strftime("%Y-%m")
 
