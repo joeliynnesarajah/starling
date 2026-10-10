@@ -14,8 +14,8 @@ python-dotenv>=1.0
 # Needed for the CSV statement upload endpoint
 python-multipart>=0.0.9
 
-# LLM fallback for categorising merchants with no MCC (Person 2)
-anthropic>=0.40
+# LLM fallback for categorising merchants with no MCC (Person 2), via Azure OpenAI
+openai>=1.40
 
 # Tests
 pytest>=8.0
