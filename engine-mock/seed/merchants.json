@@ -1,0 +1,55 @@
+[
+    {"name": "Tesco", "mcc": 5411, "division": "01", "min": 5, "max": 70},
+    {"name": "Sainsbury's", "mcc": 5411, "division": "01", "min": 5, "max": 70},
+    {"name": "Aldi", "mcc": 5411, "division": "01", "min": 5, "max": 50},
+    {"name": "Lidl", "mcc": 5411, "division": "01", "min": 5, "max": 50},
+    {"name": "Co-op", "mcc": 5411, "division": "01", "min": 3, "max": 20},
+  
+    {"name": "Majestic Wine", "mcc": 5921, "division": "02", "min": 10, "max": 40},
+    {"name": "Bargain Booze", "mcc": 5921, "division": "02", "min": 5, "max": 25},
+  
+    {"name": "Primark", "mcc": 5651, "division": "03", "min": 8, "max": 40},
+    {"name": "Zara", "mcc": 5691, "division": "03", "min": 20, "max": 80},
+    {"name": "Next", "mcc": 5651, "division": "03", "min": 15, "max": 70},
+    {"name": "JD Sports", "mcc": 5661, "division": "03", "min": 30, "max": 120},
+  
+    {"name": "Foxtons Lettings", "mcc": 6513, "division": "04", "min": 600, "max": 1500},
+    {"name": "Octopus Energy", "mcc": 4900, "division": "04", "min": 50, "max": 150},
+    {"name": "Thames Water", "mcc": 4900, "division": "04", "min": 25, "max": 50},
+    {"name": "British Gas", "mcc": 4900, "division": "04", "min": 40, "max": 120},
+  
+    {"name": "IKEA", "mcc": 5712, "division": "05", "min": 10, "max": 150},
+    {"name": "B&Q", "mcc": 5200, "division": "05", "min": 5, "max": 80},
+    {"name": "Dunelm", "mcc": 5719, "division": "05", "min": 10, "max": 60},
+  
+    {"name": "Boots", "mcc": 5912, "division": "06", "min": 3, "max": 30},
+    {"name": "Superdrug", "mcc": 5912, "division": "06", "min": 3, "max": 25},
+  
+    {"name": "TfL", "mcc": 4111, "division": "07", "min": 2, "max": 9},
+    {"name": "Trainline", "mcc": 4112, "division": "07", "min": 10, "max": 90},
+    {"name": "Uber", "mcc": 4121, "division": "07", "min": 8, "max": 30},
+    {"name": "Shell", "mcc": 5541, "division": "07", "min": 40, "max": 90},
+    {"name": "BP", "mcc": 5541, "division": "07", "min": 40, "max": 90},
+  
+    {"name": "EE", "mcc": 4814, "division": "08", "min": 15, "max": 45},
+    {"name": "Vodafone", "mcc": 4814, "division": "08", "min": 15, "max": 45},
+    {"name": "BT Broadband", "mcc": 4814, "division": "08", "min": 30, "max": 55},
+  
+    {"name": "Odeon", "mcc": 7832, "division": "09", "min": 8, "max": 25},
+    {"name": "Netflix", "mcc": 5815, "division": "09", "min": 5, "max": 18},
+    {"name": "Spotify", "mcc": 5815, "division": "09", "min": 6, "max": 12},
+    {"name": "PureGym", "mcc": 7997, "division": "09", "min": 20, "max": 30},
+    {"name": "Waterstones", "mcc": 5942, "division": "09", "min": 8, "max": 25},
+  
+    {"name": "Coursera", "mcc": 8299, "division": "10", "min": 30, "max": 60},
+  
+    {"name": "Pret", "mcc": 5814, "division": "11", "min": 3, "max": 12},
+    {"name": "Greggs", "mcc": 5814, "division": "11", "min": 2, "max": 8},
+    {"name": "Costa", "mcc": 5814, "division": "11", "min": 3, "max": 7},
+    {"name": "McDonald's", "mcc": 5814, "division": "11", "min": 4, "max": 12},
+    {"name": "Nando's", "mcc": 5812, "division": "11", "min": 12, "max": 35},
+    {"name": "Wagamama", "mcc": 5812, "division": "11", "min": 15, "max": 40},
+  
+    {"name": "Aviva Insurance", "mcc": 6300, "division": "12", "min": 20, "max": 60},
+    {"name": "Toni & Guy", "mcc": 7230, "division": "12", "min": 25, "max": 70}
+  ]
