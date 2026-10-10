@@ -1,0 +1,6 @@
+[
+  { "id": "acc_student", "name": "Priya, London student renter", "persona": "student", "balance_pence": 120000 },
+  { "id": "acc_commuter", "name": "Tom, commutes by car", "persona": "commuter", "balance_pence": 450000 },
+  { "id": "acc_parent", "name": "Aisha, parent of two", "persona": "parent", "balance_pence": 300000 },
+  { "id": "acc_retiree", "name": "Margaret, retired homeowner", "persona": "retiree", "balance_pence": 900000 }
+]

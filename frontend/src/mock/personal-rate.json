@@ -1,0 +1,24 @@
+{
+  "_note": "FAKE PLACEHOLDER NUMBERS. Shape matches PersonalRate in backend/app/schemas.py. Never show these in the pitch.",
+  "account_id": "acc_student",
+  "month": "2026-08",
+  "personal_rate": 0.061,
+  "headline_rate": 0.038,
+  "biggest_driver": "04",
+  "weights": [
+    { "code": "04", "name": "Housing, water, electricity, gas and other fuels", "weight": 0.52, "rate": 0.072, "contribution": 0.0374 },
+    { "code": "11", "name": "Restaurants and hotels", "weight": 0.12, "rate": 0.055, "contribution": 0.0066 },
+    { "code": "01", "name": "Food and non-alcoholic beverages", "weight": 0.18, "rate": 0.035, "contribution": 0.0063 },
+    { "code": "07", "name": "Transport", "weight": 0.08, "rate": 0.021, "contribution": 0.0017 },
+    { "code": "09", "name": "Recreation and culture", "weight": 0.1, "rate": 0.015, "contribution": 0.0015 }
+  ],
+  "explanation": "Housing is 52% of your spending and rose 7.2% this year.",
+  "summary": {
+    "spend_pence": 1650000,
+    "categorised_pence": 1560000,
+    "unmapped_pence": 40000,
+    "excluded_pence": 50000,
+    "by_method": { "mcc": 410, "keyword": 22, "unmapped": 6, "excluded": 31 }
+  },
+  "suggested_monthly_top_up_pence": 230
+}

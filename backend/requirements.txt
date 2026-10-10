@@ -1,0 +1,21 @@
+# Meflation API (port 8000)
+
+# Web framework and server
+fastapi>=0.110
+uvicorn[standard]>=0.29
+
+# HTTP client for the Engine mock and the ONS API
+httpx>=0.27
+
+# Settings from environment variables (ENGINE_URL, OFFLINE, USE_LLM)
+pydantic-settings>=2.2
+python-dotenv>=1.0
+
+# Needed for the CSV statement upload endpoint
+python-multipart>=0.0.9
+
+# LLM fallback for categorising merchants with no MCC (Person 2)
+anthropic>=0.40
+
+# Tests
+pytest>=8.0

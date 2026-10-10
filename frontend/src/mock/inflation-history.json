@@ -1,0 +1,18 @@
+{
+  "_note": "FAKE PLACEHOLDER NUMBERS. Shape matches InflationHistory in backend/app/schemas.py. Only two divisions shown to keep it short; the real response has all 12.",
+  "source": "ONS CPIH (cpih01), fetched [placeholder]",
+  "points": [
+    { "month": "2025-09", "headline_rate": 0.041, "division_rates": { "01": 0.04, "04": 0.068 } },
+    { "month": "2025-10", "headline_rate": 0.04, "division_rates": { "01": 0.039, "04": 0.069 } },
+    { "month": "2025-11", "headline_rate": 0.039, "division_rates": { "01": 0.038, "04": 0.069 } },
+    { "month": "2025-12", "headline_rate": 0.039, "division_rates": { "01": 0.037, "04": 0.07 } },
+    { "month": "2026-01", "headline_rate": 0.038, "division_rates": { "01": 0.037, "04": 0.07 } },
+    { "month": "2026-02", "headline_rate": 0.037, "division_rates": { "01": 0.036, "04": 0.071 } },
+    { "month": "2026-03", "headline_rate": 0.037, "division_rates": { "01": 0.036, "04": 0.071 } },
+    { "month": "2026-04", "headline_rate": 0.039, "division_rates": { "01": 0.036, "04": 0.072 } },
+    { "month": "2026-05", "headline_rate": 0.039, "division_rates": { "01": 0.035, "04": 0.072 } },
+    { "month": "2026-06", "headline_rate": 0.038, "division_rates": { "01": 0.035, "04": 0.072 } },
+    { "month": "2026-07", "headline_rate": 0.038, "division_rates": { "01": 0.035, "04": 0.072 } },
+    { "month": "2026-08", "headline_rate": 0.038, "division_rates": { "01": 0.035, "04": 0.072 } }
+  ]
+}

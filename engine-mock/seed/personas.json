@@ -1,0 +1,34 @@
+{
+  "_owner": "Person 2",
+  "_note": "Monthly budgets in pence per division. These are STARTING GUESSES. Once Person 3 has real ONS rates, tune them so each persona's personal rate comes out clearly different from the others and from the headline.",
+  "personas": [
+    {
+      "key": "student",
+      "account_id": "acc_student",
+      "name": "Priya, London student renter",
+      "monthly_income_pence": 150000,
+      "monthly_budget_pence": { "01": 18000, "02": 4000, "03": 3000, "04": 85000, "07": 6000, "08": 2000, "09": 5000, "11": 15000 }
+    },
+    {
+      "key": "commuter",
+      "account_id": "acc_commuter",
+      "name": "Tom, commutes by car",
+      "monthly_income_pence": 300000,
+      "monthly_budget_pence": { "01": 30000, "02": 6000, "03": 5000, "04": 110000, "07": 35000, "08": 3500, "09": 8000, "11": 10000 }
+    },
+    {
+      "key": "parent",
+      "account_id": "acc_parent",
+      "name": "Aisha, parent of two",
+      "monthly_income_pence": 380000,
+      "monthly_budget_pence": { "01": 70000, "03": 12000, "04": 130000, "05": 8000, "06": 3000, "07": 15000, "08": 5000, "09": 12000, "11": 6000 }
+    },
+    {
+      "key": "retiree",
+      "account_id": "acc_retiree",
+      "name": "Margaret, retired homeowner",
+      "monthly_income_pence": 200000,
+      "monthly_budget_pence": { "01": 35000, "02": 4000, "04": 25000, "05": 5000, "06": 6000, "07": 8000, "08": 3000, "09": 10000, "11": 6000 }
+    }
+  ]
+}

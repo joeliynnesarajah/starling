@@ -8,7 +8,7 @@ Built at #HuddleHiveHack26 for the Starling Engine challenge: *Banking-as-a-Plat
 
 ## The problem
 
-The inflation figure on the news is an average across the whole country. Your real inflation rate depends on what *you* spend money on. A student renting in London, a commuter who drives and a parent doing a big weekly food shop can all feel very different price rises in the same month.
+The inflation figure on the news is an average across the whole country. Your real inflation rate depends on what *you* spend money on. A student renting in London and a commuter who drives can feel very different price rises in the same month.
 
 Your savings lose value at *your* rate, and no bank tells you what that is.
 
@@ -29,9 +29,9 @@ Your savings lose value at *your* rate, and no bank tells you what that is.
 
 ## How it works
 
-1. Pull the last 12 months of transactions from Engine.
-2. Map each transaction's merchant category code (MCC) to one of the 12 official ONS spending categories (COICOP divisions).
-3. Work out the share of spending in each category. These are your **personal weights**.
+1. Pull transactions from Engine.
+2. Map each transaction to one of the 12 official ONS spending categories (COICOP divisions), using its merchant category code (MCC), then merchant-name rules as a fallback.
+3. Work out the share of spending in each category over the last 12 months. These are your **personal weights**.
 4. Get each category's annual inflation rate from ONS.
 5. Calculate your rate:
 
@@ -51,89 +51,141 @@ ONS returns index levels, so annual rates are calculated as:
 annual_rate = index_this_month / index_same_month_last_year − 1
 ```
 
+The history chart shows 12 monthly points, each using the 12 months of spending before it. That's why the demo personas have **24 months** of transactions.
+
 ## Architecture
 
 ```mermaid
 flowchart LR
-    FE[Frontend<br/>React + Vite] --> BE[Meflation API<br/>FastAPI :8000]
+    FE[Frontend<br/>React + Vite :5173] --> BE[Meflation API<br/>FastAPI :8000]
     BE --> EM[Mock Engine Core<br/>FastAPI :8001]
     BE --> ONS[ONS Beta API<br/>api.beta.ons.gov.uk]
     BE --> CACHE[(ONS cache<br/>JSON)]
 ```
 
-The Engine mock runs as its own service on a separate port, so Meflation genuinely connects to "Engine" over HTTP, the same way a real third-party integration would.
+The Engine mock runs as its own service on a separate port, so Meflation genuinely connects to "Engine" over HTTP, the same way a real third-party integration would. The frontend only talks to the Meflation API.
 
 ---
+
+## Team
+
+Everyone owns a slice of the backend **and** the frontend components that display it.
+
+| Who | Owns | Backend | Frontend |
+|---|---|---|---|
+| Person 1 _(name)_ | Mock Engine Core | `engine-mock/app/`, `seed/load.py`, `backend/app/engine_client.py`, `routes/bank.py` | `SpacesPanel` |
+| Person 2 _(name)_ | Data and categorisation | `seed/generate_personas.py` + JSON, `backend/app/categorise/`, `routes/statements.py` | `PersonaSwitcher`, `UploadStatement`, `CategorisedBadge` |
+| Person 3 _(name)_ | ONS pipeline and app shell | `backend/app/ons/`, `routes/inflation.py`, `main.py`, `config.py` | `App.jsx`, `styles.css`, `api.js`, `SourceFooter`, headline line on `HistoryChart` |
+| Person 4 _(name)_ | Calculation engine | `backend/app/calc/`, `routes/personal.py`, `routes/inflation_proof.py` | `HeadlineCard`, `BreakdownChart`, `InflationProofToggle`, personal line on `HistoryChart` |
+
+Every file starts with a comment saying who owns it, and every unfinished piece is marked `TODO(Person N)`. To see your list:
+
+```bash
+grep -rn "TODO(Person 2)" --include=*.py --include=*.jsx --include=*.js .
+```
+
+Shared files (`schemas.py`, `divisions.py`, `config.py`, `api.js`, `docs/contracts.md`): change them freely, but tell the team.
 
 ## Folder structure
 
 ```
 meflation/
 ├── README.md
+├── .gitignore
+├── docs/
+│   └── contracts.md                  # every JSON shape, agree in the first hour
 ├── scripts/
-│   └── dev.sh                      # starts all services together
+│   └── dev.sh                        # starts all three services
+├── pitch/
+│   └── demo-script.md
 │
-├── engine-mock/                    # Person 1: Mock Engine Core (port 8001)
+├── engine-mock/                      # Mock Engine Core (port 8001)
 │   ├── requirements.txt
+│   ├── pytest.ini
 │   ├── app/
-│   │   ├── main.py
-│   │   ├── db.py                   # SQLite setup
-│   │   ├── models.py               # Account, Transaction, Space, StandingOrder
-│   │   └── routes/
+│   │   ├── main.py                   # P1
+│   │   ├── db.py                     # P1  SQLite setup
+│   │   ├── models.py                 # P1  Account, Transaction, Space, StandingOrder
+│   │   ├── schemas.py                # P1  request bodies
+│   │   └── routes/                   # P1
 │   │       ├── accounts.py
 │   │       ├── transactions.py
 │   │       ├── spaces.py
-│   │       └── standing_orders.py
-│   └── seed/
-│       ├── generate_personas.py    # 12 months of fake transactions per persona
-│       └── personas.json           # student renter, commuter, parent, retiree
+│   │       ├── standing_orders.py
+│   │       ├── simulate.py           # "simulate next month" for the demo
+│   │       └── admin.py              # /admin/reset before every rehearsal
+│   ├── seed/
+│   │   ├── personas.json             # P2  4 personas, monthly budgets
+│   │   ├── merchants.json            # P2  real UK merchants + MCCs
+│   │   ├── generate_personas.py      # P2  writes generated/transactions.json
+│   │   ├── load.py                   # P1  loads it into the database
+│   │   └── generated/
+│   └── tests/
+│       └── test_health.py
 │
-├── backend/                        # Persons 2 + 3: Meflation API (port 8000)
+├── backend/                          # Meflation API (port 8000)
 │   ├── requirements.txt
+│   ├── pytest.ini
+│   ├── .env.example
 │   ├── app/
-│   │   ├── main.py
-│   │   ├── config.py               # ENGINE_URL, ONS base URL
-│   │   ├── engine_client.py        # talks to engine-mock
-│   │   ├── ons/                    # Person 2: ONS pipeline
-│   │   │   ├── fetch.py            # calls ONS Beta API
-│   │   │   ├── divisions.py        # the 12 COICOP divisions + ONS aggregate codes
-│   │   │   ├── rates.py            # index levels -> annual rates
-│   │   │   └── cache/
-│   │   │       └── ons_cache.json  # fallback so the demo never depends on wifi
-│   │   ├── calc/                   # Person 3: calculation engine
-│   │   │   ├── mcc_to_coicop.py    # merchant category -> spending category
+│   │   ├── main.py                   # P3  wires up the routers
+│   │   ├── config.py                 # P3  settings from .env
+│   │   ├── schemas.py                # shared: contracts as code
+│   │   ├── divisions.py              # shared: the 12 categories
+│   │   ├── engine_client.py          # P1  the only code that calls Engine
+│   │   ├── categorise/               # P2
+│   │   │   ├── mcc_map.py
+│   │   │   ├── keywords.py
+│   │   │   ├── llm.py                # optional fallback, off by default
+│   │   │   ├── categorise.py
+│   │   │   └── csv_import.py
+│   │   ├── ons/                      # P3
+│   │   │   ├── codes.py              # our codes -> ONS aggregate codes
+│   │   │   ├── fetch.py
+│   │   │   ├── rates.py
+│   │   │   ├── cache.py
+│   │   │   ├── service.py            # what everyone else calls
+│   │   │   ├── refresh.py            # python -m app.ons.refresh
+│   │   │   └── cache/                # ons_cache.json goes here (commit it)
+│   │   ├── calc/                     # P4
 │   │   │   ├── weights.py
 │   │   │   ├── personal_rate.py
-│   │   │   └── top_up.py
+│   │   │   ├── history.py
+│   │   │   ├── top_up.py
+│   │   │   └── explain.py
 │   │   └── routes/
-│   │       ├── inflation.py        # GET /inflation/divisions, /inflation/history
-│   │       ├── personal.py         # GET /personal-rate
-│   │       └── inflation_proof.py  # POST /inflation-proof
+│   │       ├── bank.py               # P1
+│   │       ├── statements.py         # P2
+│   │       ├── inflation.py          # P3
+│   │       ├── personal.py           # P4
+│   │       └── inflation_proof.py    # P4
 │   └── tests/
-│       ├── test_rates.py
-│       ├── test_weights.py
-│       ├── test_personal_rate.py
-│       └── test_top_up.py
+│       ├── test_health.py
+│       ├── test_categorise.py        # P2
+│       ├── test_rates.py             # P3
+│       └── test_calc.py              # P4
 │
-├── frontend/                       # Person 4: UI (port 5173)
-│   ├── package.json
-│   ├── index.html
-│   └── src/
-│       ├── App.jsx
-│       ├── api.js                  # switch between mock data and real API
-│       ├── mock/                   # fake responses matching the contracts below
-│       │   ├── personal-rate.json
-│       │   └── history.json
-│       └── components/
-│           ├── HeadlineCard.jsx        # "Your inflation: X%. Headline: Y%."
-│           ├── BreakdownChart.jsx      # what's driving your rate
-│           ├── HistoryChart.jsx        # you vs headline over time
-│           ├── PersonaSwitcher.jsx
-│           └── InflationProofToggle.jsx
-│
-└── pitch/
-    ├── slides.pdf
-    └── demo-script.md
+└── frontend/                         # React + Vite (port 5173)
+    ├── package.json
+    ├── vite.config.js
+    ├── index.html
+    ├── .env.example
+    └── src/
+        ├── main.jsx
+        ├── App.jsx                   # P3  page layout
+        ├── styles.css                # P3  shared colours and layout
+        ├── api.js                    # shared: mock/real switch
+        ├── mock/                     # fake JSON until the backend is ready
+        └── components/
+            ├── HeadlineCard.jsx          # P4
+            ├── BreakdownChart.jsx        # P4
+            ├── HistoryChart.jsx          # P3 + P4
+            ├── InflationProofToggle.jsx  # P4
+            ├── SpacesPanel.jsx           # P1
+            ├── PersonaSwitcher.jsx       # P2
+            ├── UploadStatement.jsx       # P2
+            ├── CategorisedBadge.jsx      # P2
+            └── SourceFooter.jsx          # P3
 ```
 
 ---
@@ -143,7 +195,7 @@ meflation/
 ### Prerequisites
 
 - Python 3.11+
-- Node 18+
+- Node 20.19+ (Vite needs it)
 
 ### Engine mock
 
@@ -151,9 +203,12 @@ meflation/
 cd engine-mock
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python seed/generate_personas.py
+python -m seed.generate_personas   # once Person 2's generator works
+python -m seed.load                # once Person 1's loader works
 uvicorn app.main:app --reload --port 8001
 ```
+
+Docs at http://localhost:8001/docs
 
 ### Meflation API
 
@@ -161,99 +216,44 @@ uvicorn app.main:app --reload --port 8001
 cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-export ENGINE_URL=http://localhost:8001
+cp .env.example .env
 uvicorn app.main:app --reload --port 8000
 ```
+
+Docs at http://localhost:8000/docs
 
 ### Frontend
 
 ```bash
 cd frontend
 npm install
-echo "VITE_API_URL=http://localhost:8000" > .env
+cp .env.example .env               # VITE_USE_MOCK=true until Day 1 evening
 npm run dev
 ```
 
-Or start everything at once with `./scripts/dev.sh`.
+Open http://localhost:5173
+
+Or start everything at once with `./scripts/dev.sh` once the venvs and `npm install` are done.
 
 ### Tests
 
 ```bash
+cd engine-mock && pytest
 cd backend && pytest
 ```
+
+Unfinished endpoints return **501 Not Implemented** and placeholder tests are skipped, so everything runs from the start.
 
 ---
 
 ## API contracts
 
-Agreed in the first hour so everyone can build in parallel. **Don't change these without telling the team.**
+All JSON shapes are in [`docs/contracts.md`](docs/contracts.md). Agree them in the first hour. **Don't change them without telling the team.**
 
-### Engine mock: transaction
-
-`GET /transactions?account_id=acc_001&from=2025-10-01&to=2026-09-30`
-
-```json
-{
-  "id": "txn_0001",
-  "account_id": "acc_001",
-  "date": "2026-09-14",
-  "merchant": "Tesco Express",
-  "mcc": "5411",
-  "amount_pence": -1245,
-  "currency": "GBP"
-}
-```
-
-### Engine mock: standing order
-
-`POST /standing-orders`
-
-```json
-{
-  "account_id": "acc_001",
-  "space_id": "space_savings",
-  "amount_pence": 850,
-  "frequency": "monthly",
-  "reference": "Meflation inflation-proof top-up"
-}
-```
-
-### Meflation API: division rates
-
-`GET /inflation/divisions?month=2026-08`
-
-```json
-{
-  "month": "2026-08",
-  "headline_rate": 0.038,
-  "divisions": [
-    { "code": "01", "name": "Food and non-alcoholic beverages", "rate": 0.045 },
-    { "code": "07", "name": "Transport", "rate": 0.021 }
-  ]
-}
-```
-
-### Meflation API: personal rate
-
-`GET /personal-rate?account_id=acc_001`
-
-```json
-{
-  "personal_rate": 0.061,
-  "headline_rate": 0.038,
-  "biggest_driver": "04",
-  "weights": [
-    { "code": "04", "name": "Housing, water, electricity, gas", "weight": 0.52, "rate": 0.072 },
-    { "code": "01", "name": "Food and non-alcoholic beverages", "weight": 0.18, "rate": 0.045 }
-  ],
-  "excluded_pence": 23000,
-  "suggested_monthly_top_up_pence": 850
-}
-```
-
-*(All numbers above are placeholders, not real ONS figures.)*
-
----
+Rules everyone follows:
+- Money is whole pence (negative = money out).
+- Rates are decimals (0.045 = 4.5%).
+- Division codes are `"01"` to `"12"`.
 
 ## ONS data
 
@@ -261,7 +261,7 @@ Agreed in the first hour so everyone can build in parallel. **Don't change these
 - **Dataset:** `cpih01`
 - **Geography:** `K02000001` (UK)
 - **Overall index:** aggregate `cpih1dim1A0`
-- **Division codes:** look these up from the dataset's `aggregate` dimension options and record them in `backend/app/ons/divisions.py`. Don't guess them.
+- **Division codes:** look these up from the dataset's `aggregate` dimension options and record them in `backend/app/ons/codes.py`. Don't guess them.
 
 Example:
 
@@ -286,27 +286,18 @@ Check `GET /datasets/cpih01` for the latest version number.
 | 8220 | Universities | 10 Education |
 | 5812, 5814 | Restaurants, fast food | 11 Restaurants and hotels |
 
-Transfers, cash withdrawals and unmapped MCCs are excluded and reported as `excluded_pence`.
+Transfers, cash withdrawals and incoming payments are excluded and reported in the categorisation summary.
 
 ---
-
-## Team
-
-| Who | Owns | Folder |
-|---|---|---|
-| _Name_ | Mock Engine Core and persona data | `engine-mock/` |
-| _Name_ | ONS pipeline | `backend/app/ons/` |
-| _Name_ | Calculation engine and tests | `backend/app/calc/` |
-| _Name_ | Frontend and pitch | `frontend/`, `pitch/` |
 
 ## Timeline
 
 | When | Goal |
 |---|---|
-| Day 1, first hour | Agree contracts, create skeletons, everyone can run their service |
+| Day 1, first hour | Agree contracts, everyone can run their service |
 | Day 1, afternoon | Build individual parts against mock data |
 | Day 1, evening | Working end to end, even if it's ugly |
-| Day 2, morning | Real ONS data, polish, persona switcher |
+| Day 2, morning | Real ONS data, polish, persona tuning |
 | Day 2, afternoon | **Code freeze.** Rehearse the demo at least twice |
 
 ---
@@ -325,4 +316,4 @@ Transfers, cash withdrawals and unmapped MCCs are excluded and reported as `excl
 
 ---
 
-*Built in 24 hours by four people and a lot of coffee, whose price rose 0.3% while we wrote this README.* ☕
+*Built in 48 hours by four people and a lot of coffee, whose price rose 0.3% while we wrote this README.* ☕

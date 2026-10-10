@@ -1,0 +1,24 @@
+{
+  "_owner": "Person 2",
+  "_note": "Starter list. Aim for 5 to 8 real UK merchants per division, each with the correct MCC and a typical spend range in pence. Division codes match backend/app/divisions.py.",
+  "merchants": [
+    { "name": "Tesco Express", "mcc": "5411", "division": "01", "min_pence": 300, "max_pence": 2500 },
+    { "name": "Sainsbury's", "mcc": "5411", "division": "01", "min_pence": 1500, "max_pence": 9000 },
+    { "name": "Majestic Wine", "mcc": "5921", "division": "02", "min_pence": 1000, "max_pence": 4000 },
+    { "name": "Uniqlo", "mcc": "5651", "division": "03", "min_pence": 1500, "max_pence": 8000 },
+    { "name": "Octopus Energy", "mcc": "4900", "division": "04", "min_pence": 4000, "max_pence": 15000 },
+    { "name": "Boots", "mcc": "5912", "division": "06", "min_pence": 300, "max_pence": 3000 },
+    { "name": "TfL Travel", "mcc": "4111", "division": "07", "min_pence": 180, "max_pence": 900 },
+    { "name": "Shell", "mcc": "5541", "division": "07", "min_pence": 3000, "max_pence": 8000 },
+    { "name": "EE", "mcc": "4814", "division": "08", "min_pence": 1500, "max_pence": 4000 },
+    { "name": "Odeon", "mcc": "7832", "division": "09", "min_pence": 800, "max_pence": 2500 },
+    { "name": "Pret A Manger", "mcc": "5814", "division": "11", "min_pence": 300, "max_pence": 1200 },
+    { "name": "Dishoom", "mcc": "5812", "division": "11", "min_pence": 2000, "max_pence": 6000 }
+  ],
+  "non_spending": [
+    { "name": "Salary", "mcc": null, "kind": "income" },
+    { "name": "Rent - Landlord", "mcc": null, "kind": "rent", "division": "04" },
+    { "name": "Transfer to friend", "mcc": null, "kind": "transfer" },
+    { "name": "ATM withdrawal", "mcc": "6011", "kind": "cash" }
+  ]
+}

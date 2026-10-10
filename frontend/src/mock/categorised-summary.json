@@ -1,0 +1,8 @@
+{
+  "_note": "FAKE. Shape matches CategorisationSummary in backend/app/schemas.py.",
+  "spend_pence": 1650000,
+  "categorised_pence": 1560000,
+  "unmapped_pence": 40000,
+  "excluded_pence": 50000,
+  "by_method": { "mcc": 410, "keyword": 22, "unmapped": 6, "excluded": 31 }
+}

@@ -1,0 +1,12 @@
+# Mock Engine Core (port 8001)
+
+# Web framework and server
+fastapi>=0.110
+uvicorn[standard]>=0.29
+
+# SQLite models (Account, Transaction, Space, StandingOrder)
+sqlmodel>=0.0.16
+
+# Tests (FastAPI's TestClient needs httpx)
+pytest>=8.0
+httpx>=0.27
