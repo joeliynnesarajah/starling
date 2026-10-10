@@ -12,6 +12,9 @@ BANK_CATEGORY_TO_DIVISION = {
     "ENTERTAINMENT": "09",
 }
 
+# Bank categories that are not real spending
+EXCLUDED_BANK_CATEGORIES = {"INCOME", "TRANSFERS", "SAVING", "SAVINGS"}
+
 def _find_division(txn: dict) -> tuple[str | None, str]:
     # Work out (category, method) for one transaction, without the LLM.
     mcc = txn.get("mcc")
@@ -20,6 +23,10 @@ def _find_division(txn: dict) -> tuple[str | None, str]:
 
     # Step 1a: cash, transfers, etc. are not spending
     if is_excluded_mcc(mcc):
+        return None, "excluded"
+    
+    # Step 1c: the bank says it's a transfer or savings
+    if (txn.get("bank_category") or "").upper() in EXCLUDED_BANK_CATEGORIES:
         return None, "excluded"
 
     # Step 2: card code
