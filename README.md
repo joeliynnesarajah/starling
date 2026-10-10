@@ -29,7 +29,7 @@ Your savings lose value at *your* rate, and no bank tells you what that is.
 
 ## How it works
 
-![How it works: personal inflation calculation](images/how-it-works.png)
+![How it works: Personal inflation calculation](images/how-it-works.png)
 
 1. Pull transactions from Engine.
 2. Map each transaction to one of the 12 official ONS spending categories (COICOP divisions), using its merchant category code (MCC), then merchant-name rules as a fallback.
