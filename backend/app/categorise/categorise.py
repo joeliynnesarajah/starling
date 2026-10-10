@@ -93,8 +93,7 @@ def categorise(transactions: list[dict]) -> tuple[list[CategorisedTransaction], 
             date=txn["date"],
             merchant=txn["merchant"],
             amount_pence=txn["amount_pence"],
-            mcc=txn.get("mcc"),
-            division=division,
+            mcc=str(txn["mcc"]) if txn.get("mcc") is not None else None,            division=division,
             method=method,
         )
         for txn, division, method in results

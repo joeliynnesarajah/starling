@@ -1,20 +1,3 @@
-"""Generate 24 months of believable transactions for each demo persona.
-
-Owner: Person 2
-
-Why 24 months: the personal rate history chart shows 12 monthly points, and
-each point uses the 12 months of spending before it. So the oldest point
-needs data going back 23 months.
-
-Usage (from engine-mock/):
-    python -m seed.generate_personas
-    python -m seed.generate_personas --months 24 --seed 42 --end 2026-09
-
-Output: seed/generated/transactions.json in the shape
-    {"accounts": [Account...], "transactions": [Transaction...]}
-which seed/load.py reads (see docs/contracts.md for both shapes).
-"""
-
 import argparse
 import calendar
 import json
@@ -66,8 +49,7 @@ def make_txn(account_id, day: date, merchant: str, mcc, pounds: float) -> dict:
         "account_id": account_id,
         "date": day.isoformat(),
         "merchant": merchant,
-        "mcc": mcc,
-        "amount_pence": int(round(pounds * 100)),
+        "mcc": str(mcc) if mcc is not None else None,        "amount_pence": int(round(pounds * 100)),
     }
 
 
