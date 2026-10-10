@@ -1,0 +1,52 @@
+{
+    "personas": [
+      {
+        "key": "student_renter",
+        "account_id": 1,
+        "name": "London student renter",
+        "monthly_income": 1500,
+        "rent": 750,
+        "starting_balance": 800,
+        "budget": {
+          "01": 160, "02": 20, "03": 40, "04": 50, "06": 10,
+          "07": 70, "08": 25, "09": 50, "11": 180
+        }
+      },
+      {
+        "key": "car_commuter",
+        "account_id": 2,
+        "name": "Commuter who drives",
+        "monthly_income": 2800,
+        "rent": 0,
+        "starting_balance": 3000,
+        "budget": {
+          "01": 300, "02": 40, "03": 60, "04": 180, "05": 50,
+          "07": 400, "08": 45, "09": 80, "11": 100, "12": 70
+        }
+      },
+      {
+        "key": "young_family",
+        "account_id": 3,
+        "name": "Family with two kids",
+        "monthly_income": 4200,
+        "rent": 1400,
+        "starting_balance": 2500,
+        "budget": {
+          "01": 650, "03": 150, "04": 220, "05": 120, "06": 30, "07": 150,
+          "08": 60, "09": 120, "10": 40, "11": 120, "12": 80
+        }
+      },
+      {
+        "key": "retiree",
+        "account_id": 4,
+        "name": "Retired homeowner",
+        "monthly_income": 1800,
+        "rent": 0,
+        "starting_balance": 12000,
+        "budget": {
+          "01": 350, "02": 30, "04": 260, "05": 60, "06": 60,
+          "07": 60, "08": 40, "09": 70, "11": 60, "12": 90
+        }
+      }
+    ]
+  }

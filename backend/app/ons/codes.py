@@ -12,19 +12,19 @@ How to fill this in:
 Don't guess codes. Check each one returns data.
 """
 
-HEADLINE = "cpih1dim1A0"  # overall CPIH index
+HEADLINE = "CP00"  # overall CPIH index
 
 ONS_AGGREGATE_CODES: dict[str, str | None] = {
-    "01": None,  # TODO(Person 3)
-    "02": None,
-    "03": None,
-    "04": None,
-    "05": None,
-    "06": None,
-    "07": None,
-    "08": None,
-    "09": None,
-    "10": None,
-    "11": None,
-    "12": None,
+    "01": "CP01",  
+    "02": "CP02",
+    "03": "CP03",
+    "04": "CP04",
+    "05": "CP05",
+    "06": "CP06",
+    "07": "CP07",
+    "08": "CP08",
+    "09": "CP09",
+    "10": "CP10",
+    "11": "CP11",
+    "12": "CP12",
 }

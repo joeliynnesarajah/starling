@@ -2,7 +2,25 @@
 // "Source: ONS CPIH, fetched [date]". Small, but it makes the numbers believable.
 // Data: getInflationHistory().source
 
+import { useEffect, useState } from "react";
+import { getInflationHistory } from "../api.js";
+
 export default function SourceFooter() {
-  // TODO(Person 3)
-  return <footer className="footer">Source: ONS CPIH (TODO(Person 3): fetched date)</footer>;
+  const [source, setSource] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getInflationHistory(1)
+      .then((data) => !cancelled && setSource(data.source))
+      .catch(() => {}); // the footer is not worth an error message
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <footer className="footer">
+      Source: {source ?? "ONS CPIH"}
+    </footer>
+  );
 }

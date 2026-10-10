@@ -27,6 +27,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+@app.get("/")
+def root():
+    return {"Hello" : "World"}
+
 
 @app.get("/health", tags=["meta"])
 def health():

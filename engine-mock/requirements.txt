@@ -6,6 +6,7 @@ uvicorn[standard]>=0.29
 
 # SQLite models (Account, Transaction, Space, StandingOrder)
 sqlmodel>=0.0.16
+sqlalchemy>=2.0
 
 # Tests (FastAPI's TestClient needs httpx)
 pytest>=8.0
