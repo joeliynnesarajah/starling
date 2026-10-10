@@ -95,12 +95,12 @@ meflation/
 ├── docs/
 │   └── contracts.md                  # every JSON shape, agree in the first hour
 ├── scripts/
-│   └── dev.sh                        # starts all three services
+│   └── dev.sh                        # sets up and starts all three services
 ├── pitch/
 │   └── demo-script.md
 │
 ├── engine-mock/                      # Mock Engine Core (port 8001)
-│   ├── requirements.txt
+│   ├── requirements.txt              # includes sqlmodel + sqlalchemy
 │   ├── pytest.ini
 │   ├── app/
 │   │   ├── main.py                   # P1
@@ -124,8 +124,8 @@ meflation/
 │       └── test_health.py
 │
 ├── backend/                          # Meflation API (port 8000)
-│   ├── requirements.txt
-│   ├── pytest.ini
+│   ├── requirements.txt              # includes openai (Azure OpenAI client)
+│   ├── pytest.ini                    # registers the "integration" marker
 │   ├── .env.example
 │   ├── app/
 │   │   ├── main.py                   # P3  wires up the routers
@@ -133,10 +133,13 @@ meflation/
 │   │   ├── schemas.py                # shared: contracts as code
 │   │   ├── divisions.py              # shared: the 12 categories
 │   │   ├── engine_client.py          # P1  the only code that calls Engine
+│   │   ├── services/
+│   │   │   └── openai.py             # Azure OpenAI client
 │   │   ├── categorise/               # P2
 │   │   │   ├── mcc_map.py
 │   │   │   ├── keywords.py
-│   │   │   ├── llm.py                # optional fallback, off by default
+│   │   │   ├── llm.py                # fallback for unmapped merchants (needs Azure key), caches answers
+│   │   │   ├── llm_cache.json        # merchants already classified (generated)
 │   │   │   ├── categorise.py
 │   │   │   └── csv_import.py
 │   │   ├── ons/                      # P3
@@ -162,6 +165,7 @@ meflation/
 │   └── tests/
 │       ├── test_health.py
 │       ├── test_categorise.py        # P2
+│       ├── test_llm.py               # P2  mocked tests + real-API integration tests
 │       ├── test_rates.py             # P3
 │       └── test_calc.py              # P4
 │
@@ -194,7 +198,7 @@ meflation/
 
 ### Prerequisites
 
-- Python 3.11+
+- Python 3.11 to 3.13 (3.14 is very new and some packages don't have prebuilt versions for it yet)
 - Node 20.19+ (Vite needs it)
 
 ### Engine mock
@@ -205,7 +209,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 python -m seed.generate_personas   # once Person 2's generator works
 python -m seed.load                # once Person 1's loader works
-uvicorn app.main:app --reload --port 8001
+uvicorn app.main:app --reload --reload-dir app --port 8001
 ```
 
 Docs at http://localhost:8001/docs
@@ -217,10 +221,12 @@ cd backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --reload-dir app --port 8000
 ```
 
 Docs at http://localhost:8000/docs
+
+`--reload-dir app` makes uvicorn watch only your code. Without it, it watches `.venv` too and restarts constantly whenever pip or a sync tool touches a file in there. Changes to `.env` aren't picked up by the reloader, so restart the server after editing it.
 
 ### Frontend
 
@@ -233,16 +239,39 @@ npm run dev
 
 Open http://localhost:5173
 
-Or start everything at once with `./scripts/dev.sh` once the venvs and `npm install` are done.
+### Everything at once
+
+Run `./scripts/dev.sh` from the repo root. It creates the venvs, installs the requirements, runs `npm install`, copies any missing `.env` files, then starts all three services.
+
+- `SKIP_INSTALL=1 ./scripts/dev.sh` skips the install step.
+- `PYTHON=python3.12 ./scripts/dev.sh` picks the Python version (only applies when a venv is first created).
 
 ### Tests
 
 ```bash
 cd engine-mock && pytest
-cd backend && pytest
+cd backend && pytest -m "not integration"   # offline, free, fast
+cd backend && pytest -m integration         # calls the real Azure OpenAI API (needs credentials in .env)
 ```
 
-Unfinished endpoints return **501 Not Implemented** and placeholder tests are skipped, so everything runs from the start.
+Unfinished endpoints return **501 Not Implemented** and placeholder tests are skipped, so everything runs from the start. The integration tests skip themselves if no Azure key is set.
+
+---
+
+## Configuration (`backend/.env`)
+
+| Variable | Default | What it does |
+|---|---|---|
+| `ENGINE_URL` | `http://localhost:8001` | Where the mock Engine runs |
+| `OFFLINE` | `false` | `true` = never call ONS, read `ons/cache/ons_cache.json` only |
+| `USE_LLM` | `true` | Use the LLM to categorise merchants the MCC and keyword rules miss |
+| `AZURE_OPENAI_API_KEY` | empty | Needed for the LLM fallback. With no key, the LLM stays off |
+| `AZURE_OPENAI_ENDPOINT` | empty | Your Azure OpenAI endpoint |
+| `AZURE_OPENAI_DEPLOYMENT` | `gpt-4o-mini` | The model deployment name in Azure |
+
+The LLM only runs when `USE_LLM` is true **and** an Azure key is set. It sends merchant names only (no amounts or dates), in one batched request, and saves the answers in `categorise/llm_cache.json` so the same merchant is never asked about twice. Set `USE_LLM=false` for the demo if you want it fully off.
+
+Never commit `.env`. To refresh the ONS cache, run `python -m app.ons.refresh` from `backend/`.
 
 ---
 
@@ -260,16 +289,21 @@ Rules everyone follows:
 - **Base URL:** `https://api.beta.ons.gov.uk/v1`
 - **Dataset:** `cpih01`
 - **Geography:** `K02000001` (UK)
-- **Overall index:** aggregate `CP00`
-- **Division codes:** look these up from the dataset's `aggregate` dimension options and record them in `backend/app/ons/codes.py`. Don't guess them.
-
-Example:
+- **Latest version:** read `links.latest_version.id` from `GET /datasets/cpih01` (don't hardcode it)
+- **Time labels:** `Mon-YY` (e.g. `Oct-11`), converted to `YYYY-MM` by `parse_ons_month`
+- **Aggregate codes:** the overall index is `CP00`, and our divisions `"01"` to `"12"` map to `CP01` to `CP12`. They're recorded in `backend/app/ons/codes.py`. To list or recheck them:
 
 ```
-GET /datasets/cpih01/editions/time-series/versions/{latest}/observations?time=*&geography=K02000001&aggregate=cpih1dim1A0
+GET /datasets/cpih01/editions/time-series/versions/{version}/dimensions/aggregate/options?limit=200
 ```
 
-Check `GET /datasets/cpih01` for the latest version number.
+Example (one month of the overall index):
+
+```
+GET /datasets/cpih01/editions/time-series/versions/{version}/observations?time=Jan-26&geography=K02000001&aggregate=CP00
+```
+
+> **Data freshness:** ONS has marked this dataset as no longer updated. The latest month available is **January 2026**, so the app's "latest month" and the footer reflect that. The demo reads from the committed cache (`OFFLINE=true`) so it doesn't depend on the API being up.
 
 ## MCC to spending category (starter mapping)
 
@@ -306,6 +340,7 @@ Transfers, cash withdrawals and incoming payments are excluded and reported in t
 
 - **It's an estimate.** ONS rates are national averages for each category, not the actual prices you paid. Two people buying "food" can see different price rises depending on where they shop.
 - **Category mapping is approximate.** One MCC can cover several kinds of spending (a supermarket also sells clothes), so some spend lands in the wrong category.
+- **ONS data stops at January 2026.** ONS no longer updates the CPIH dataset we use, so figures are as of that month.
 
 ## What's next
 
@@ -313,6 +348,7 @@ Transfers, cash withdrawals and incoming payments are excluded and reported in t
 - Regional rates, once ONS publishes them at the right level of detail.
 - Nudges when your rate jumps, explaining which category caused it.
 - Open it up to other Engine banks as a toggleable capability.
+- Move to ONS's published time series tables for data after January 2026.
 
 ---
 
