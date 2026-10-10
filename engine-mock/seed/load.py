@@ -12,7 +12,12 @@ Usage (from engine-mock/):
 import json
 from pathlib import Path
 
-from app.db import init_db
+from sqlalchemy import delete
+from sqlmodel import Session
+
+from app.db import engine, init_db
+from app.models import Account, Setting, Space, StandingOrder, Transaction
+from app.routes.simulate import set_simulated_today
 
 SEED_FILE = Path(__file__).resolve().parent / "generated" / "transactions.json"
 
@@ -24,9 +29,22 @@ def reset_and_load(seed_file: Path = SEED_FILE) -> dict:
     transaction date. Returns {"accounts": n, "transactions": n}.
     """
     init_db()
-    data = json.loads(seed_file.read_text())  # noqa: F841
-    # TODO(Person 1): clear tables, insert data["accounts"] and data["transactions"]
-    raise NotImplementedError
+    data = json.loads(seed_file.read_text())
+    # model_validate (not Model(**row)) so "YYYY-MM-DD" strings become dates
+    accounts = [Account.model_validate(row) for row in data["accounts"]]
+    transactions = [Transaction.model_validate(row) for row in data["transactions"]]
+
+    with Session(engine) as session:
+        # Children before parents
+        for model in (StandingOrder, Space, Transaction, Account, Setting):
+            session.execute(delete(model))
+        session.add_all(accounts)
+        session.add_all(transactions)
+        if transactions:
+            set_simulated_today(session, max(t.date for t in transactions))
+        session.commit()
+
+    return {"accounts": len(accounts), "transactions": len(transactions)}
 
 
 if __name__ == "__main__":

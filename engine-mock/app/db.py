@@ -22,6 +22,14 @@ def init_db() -> None:
     SQLModel.metadata.create_all(engine)
 
 
+def next_id(session: Session, model, prefix: str, width: int = 0) -> str:
+    """First unused id of the form f"{prefix}{n}", e.g. next_id(s, Space, "space_", 3) -> "space_001"."""
+    n = 1
+    while session.get(model, f"{prefix}{n:0{width}d}") is not None:
+        n += 1
+    return f"{prefix}{n:0{width}d}"
+
+
 def get_session():
     """FastAPI dependency: one database session per request."""
     with Session(engine) as session:
