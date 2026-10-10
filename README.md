@@ -286,7 +286,7 @@ Unfinished endpoints return **501 Not Implemented** and placeholder tests are sk
 | `AZURE_OPENAI_DEPLOYMENT` | `gpt-4o-mini` | The model deployment name in Azure |
 | `SAVINGS_INTEREST_RATE` | `0.025` | Interest the savings Space earns, as a decimal (0.025 = 2.5%). Used in the top-up formula |
 
-**Savings interest rate.** We use 2.5%, the standard Starling Easy Saver rate (AER) *without* its first-year bonus. Starling advertises 4.00% AER for new Easy Saver accounts, but 1.50% of that is a temporary bonus, and the top-up is a long-run monthly payment, so the standard rate is the honest one to use. It also keeps the demo meaningful: against a 4% savings rate, most personas would need no top-up at all. Rates change often, so check [starlingbank.com/savings](https://www.starlingbank.com/savings/) before the pitch and update the value if the standard rate has moved. Source and date: Starling savings page, checked 2026-10-10.
+**Savings interest rate.** We use 2.5%, the standard Starling Easy Saver rate (AER) *without* any introductory bonus. Starling currently advertises 5.00% AER to new customers, but that includes a fixed 2.50% bonus for the first 6 months only (and up to £25k), after which the account drops to the 2.50% standard rate. The top-up is a long-run monthly payment, so the standard rate is the honest one to use. It also keeps the demo meaningful: against a 4 to 5% savings rate, most personas would need no top-up at all. Rates change often, so check [starlingbank.com/savings](https://www.starlingbank.com/savings/) before the pitch and update the value if the standard rate has moved. Source and date: Starling Easy Saver page, checked 2026-10-10.
 
 The LLM only runs when `USE_LLM` is true **and** an Azure key is set. It sends merchant names only (no amounts or dates), in one batched request, and saves the answers in `categorise/llm_cache.json` so the same merchant is never asked about twice. Set `USE_LLM=false` for the demo if you want it fully off.
 
@@ -371,4 +371,4 @@ Transfers, cash withdrawals and incoming payments are excluded and reported in t
 
 ---
 
-*Built in 48 hours by four people and a lot of M&S Cookies, whose price rose 0.3% while we wrote this README.* ☕
+*Built in 48 hours by four people and a lot of coffee, whose price rose 0.3% while we wrote this README.* ☕
