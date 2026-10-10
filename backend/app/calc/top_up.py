@@ -10,5 +10,5 @@ Round to whole pence.
 
 
 def monthly_top_up_pence(balance_pence: int, personal_rate: float, interest_rate: float) -> int:
-    # TODO(Person 4)
-    raise NotImplementedError
+    gap = max(0.0, personal_rate - interest_rate)
+    return round(balance_pence * gap / 12)
