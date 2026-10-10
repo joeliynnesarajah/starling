@@ -260,7 +260,7 @@ Rules everyone follows:
 - **Base URL:** `https://api.beta.ons.gov.uk/v1`
 - **Dataset:** `cpih01`
 - **Geography:** `K02000001` (UK)
-- **Overall index:** aggregate `cpih1dim1A0`
+- **Overall index:** aggregate `CP00`
 - **Division codes:** look these up from the dataset's `aggregate` dimension options and record them in `backend/app/ons/codes.py`. Don't guess them.
 
 Example:
