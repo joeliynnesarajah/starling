@@ -45,11 +45,27 @@ personal_rate = Σ (your_weight_in_category × category_inflation_rate)
 monthly_top_up = savings_balance × (personal_rate − savings_interest_rate) / 12
 ```
 
+The top-up covers the gap between your personal inflation and what the savings pot already earns, spread over 12 months. It is never below zero: if the savings rate beats your inflation, no top-up is needed.
+
 ONS returns index levels, so annual rates are calculated as:
 
 ```
 annual_rate = index_this_month / index_same_month_last_year − 1
 ```
+
+### Worked example
+
+Three people, each with £5,000 in their savings Space, and a savings interest rate of 2.5%:
+
+| Person | Spending mix | Personal rate | Gap over savings rate | Monthly top-up |
+|---|---|---|---|---|
+| A | Heavy on rent and energy | 5.0% | 2.5% | £5,000 × 0.025 / 12 ≈ **£10.42** |
+| B | Mostly groceries and transport | 3.5% | 1.0% | £5,000 × 0.010 / 12 ≈ **£4.17** |
+| C | Spending close to the average | 2.0% | below zero | **£0** (savings already outpace their inflation) |
+
+Only the *proportions* of spending matter, not the amounts: two people with the same spending mix get the same personal rate, however much they spend. The savings balance matters too, because a bigger pot needs a bigger top-up to keep the same buying power.
+
+When the "inflation-proof" toggle is switched on, the app creates the savings Space (if there isn't one) and a monthly standing order for the top-up amount through Engine. "Simulate next month" runs it and the balance goes up. Switching the toggle off deletes the standing order.
 
 The history chart shows 12 monthly points, each using the 12 months of spending before it. That's why the demo personas have **24 months** of transactions.
 
@@ -268,6 +284,9 @@ Unfinished endpoints return **501 Not Implemented** and placeholder tests are sk
 | `AZURE_OPENAI_API_KEY` | empty | Needed for the LLM fallback. With no key, the LLM stays off |
 | `AZURE_OPENAI_ENDPOINT` | empty | Your Azure OpenAI endpoint |
 | `AZURE_OPENAI_DEPLOYMENT` | `gpt-4o-mini` | The model deployment name in Azure |
+| `SAVINGS_INTEREST_RATE` | `0.025` | Interest the savings Space earns, as a decimal (0.025 = 2.5%). Used in the top-up formula |
+
+**Savings interest rate.** We use 2.5%, the standard Starling Easy Saver rate (AER) *without* its first-year bonus. Starling advertises 4.00% AER for new Easy Saver accounts, but 1.50% of that is a temporary bonus, and the top-up is a long-run monthly payment, so the standard rate is the honest one to use. It also keeps the demo meaningful: against a 4% savings rate, most personas would need no top-up at all. Rates change often, so check [starlingbank.com/savings](https://www.starlingbank.com/savings/) before the pitch and update the value if the standard rate has moved. Source and date: Starling savings page, checked 2026-10-10.
 
 The LLM only runs when `USE_LLM` is true **and** an Azure key is set. It sends merchant names only (no amounts or dates), in one batched request, and saves the answers in `categorise/llm_cache.json` so the same merchant is never asked about twice. Set `USE_LLM=false` for the demo if you want it fully off.
 
@@ -352,4 +371,4 @@ Transfers, cash withdrawals and incoming payments are excluded and reported in t
 
 ---
 
-*Built in 48 hours by four people and a lot of coffee, whose price rose 0.3% while we wrote this README.* ☕
+*Built in 48 hours by four people and a lot of M&S Cookies, whose price rose 0.3% while we wrote this README.* ☕
