@@ -107,3 +107,8 @@ export const setInflationProof = (accountId, enabled) =>
   USE_MOCK
     ? fake({ account_id: accountId, enabled, monthly_top_up_pence: enabled ? 850 : 0 })
     : post("/inflation-proof", { account_id: accountId, enabled });
+
+export const getInflationProof = (accountId) =>
+  USE_MOCK
+    ? fake({ account_id: accountId, enabled: false, monthly_top_up_pence: 0 })
+    : request(`/inflation-proof?account_id=${accountId}`);

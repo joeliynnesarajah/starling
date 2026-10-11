@@ -1,30 +1,41 @@
 // Owner: Person 4
 // One switch: "Inflation-proof my savings". Shows the monthly top-up when on.
+// On load it asks the backend whether inflation-proofing is already on,
+// so the button shows the real state after a page refresh.
 
 import { useEffect, useState } from "react";
-import { getPersonalRate, setInflationProof } from "../api.js";
+import { getInflationProof, getPersonalRate, setInflationProof } from "../api.js";
 
 const pounds = (pence) => `£${(pence / 100).toFixed(2)}`;
 
 export default function InflationProofToggle({ accountId }) {
   const [enabled, setEnabled] = useState(false);
-  const [topUp, setTopUp] = useState(null); // suggested amount, in pence
+  const [topUp, setTopUp] = useState(null); // amount in pence: the active standing order if on, else the suggestion
   const [rate, setRate] = useState(null); // personal inflation rate, to explain a £0 top-up
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  // Load the suggested top-up whenever the persona changes
+  // Whenever the persona changes, load the suggestion AND the current on/off state
   useEffect(() => {
+    let cancelled = false;
     setEnabled(false);
     setTopUp(null);
     setRate(null);
     setError(null);
-    getPersonalRate(accountId)
-      .then((data) => {
-        setTopUp(data.suggested_monthly_top_up_pence);
-        setRate(data.personal_rate);
+
+    Promise.all([getPersonalRate(accountId), getInflationProof(accountId)])
+      .then(([rateData, status]) => {
+        if (cancelled) return;
+        setRate(rateData.personal_rate);
+        setEnabled(status.enabled);
+        // If it's already on, show the amount actually being paid in
+        setTopUp(status.enabled ? status.monthly_top_up_pence : rateData.suggested_monthly_top_up_pence);
       })
-      .catch((e) => setError(e.message));
+      .catch((e) => !cancelled && setError(e.message));
+
+    return () => {
+      cancelled = true;
+    };
   }, [accountId]);
 
   async function toggle() {
@@ -33,7 +44,13 @@ export default function InflationProofToggle({ accountId }) {
     try {
       const result = await setInflationProof(accountId, !enabled);
       setEnabled(result.enabled);
-      if (result.enabled) setTopUp(result.monthly_top_up_pence);
+      if (result.enabled) {
+        setTopUp(result.monthly_top_up_pence);
+      } else {
+        // Switched off: go back to showing the suggestion
+        const rateData = await getPersonalRate(accountId);
+        setTopUp(rateData.suggested_monthly_top_up_pence);
+      }
     } catch (e) {
       setError(e.message);
     } finally {
@@ -50,15 +67,18 @@ export default function InflationProofToggle({ accountId }) {
     return "No top-up needed right now. Either your savings interest beats your inflation rate, or there's nothing saved yet.";
   }
 
+  // Show the button whenever there's something to turn on, or it's already on
+  const showButton = topUp !== null && (topUp > 0 || enabled);
+
   return (
     <section className="card">
       <h2>Inflation-proof my savings</h2>
 
       {topUp === null && !error && <p>Loading…</p>}
 
-      {topUp === 0 && <p style={{ marginTop: 0 }}>{zeroTopUpMessage()}</p>}
+      {topUp === 0 && !enabled && <p style={{ marginTop: 0 }}>{zeroTopUpMessage()}</p>}
 
-      {topUp !== null && topUp > 0 && (
+      {showButton && (
         <>
           <p style={{ marginTop: 0 }}>
             {enabled
