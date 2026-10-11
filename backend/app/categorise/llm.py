@@ -6,7 +6,7 @@ from app.config import settings
 
 LOGGER = logging.getLogger(__name__)
 
-CACHE_FILE = Path(__file__).resolve().parent / "llm_cache.json"
+CACHE_FILE = Path(__file__).resolve().parent / "llm_cache.json" #Where saved AI answer are stored
 
 # The only answers we accept
 DIVISIONS = {
@@ -25,7 +25,7 @@ DIVISIONS = {
 }
 
 
-def _llm_enabled() -> bool:
+def _llm_enabled() -> bool: #Checks the AI is switched on and has a key
     # Only run if the team switched it on and the Azure key is set
     enabled = bool(
         getattr(settings, "use_llm", False)
@@ -48,7 +48,7 @@ def _save_cache(cache: dict) -> None:
 
 
 def _ask_llm(merchants: list[str]) -> dict:
-    # Send ALL the shop names in ONE request and get JSON back
+    # Send ALL the shop names in ONE request and get JSON back( OpenAI in one message)
     from app.services.openai import openai_client  # the team's Azure setup
 
     client = openai_client()

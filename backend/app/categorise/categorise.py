@@ -12,7 +12,7 @@ BANK_CATEGORY_TO_DIVISION = {
     "ENTERTAINMENT": "09",
 }
 
-# Bank categories that are not real spending
+# Bank labels that mean “not spending”: income, transfers, savings.
 EXCLUDED_BANK_CATEGORIES = {"INCOME", "TRANSFERS", "SAVING", "SAVINGS"}
 
 def _find_division(txn: dict) -> tuple[str | None, str]:
