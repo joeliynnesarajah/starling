@@ -13,6 +13,18 @@ const EMOJI = {
   retiree: "🌷",
 };
 
+// Emojis for uploaded statements: each account always gets the same one
+const UPLOAD_EMOJIS = ["✨", "💳", "🌟", "💜", "🦋", "🍀", "🌈", "🎀", "🪴", "🧁"];
+
+function emojiFor(account) {
+  if (EMOJI[account.persona]) return EMOJI[account.persona]; // demo people keep theirs
+  const id = String(account.id ?? account.account_id ?? "");
+  // Turn the id into a number, then pick from the list
+  let total = 0;
+  for (const char of id) total += char.charCodeAt(0);
+  return UPLOAD_EMOJIS[total % UPLOAD_EMOJIS.length];
+}
+
 export default function PersonaSwitcher({ accountId, onChange }) {
   const [accounts, setAccounts] = useState([]); // the list of people
   const [error, setError] = useState(null);
@@ -43,12 +55,12 @@ export default function PersonaSwitcher({ accountId, onChange }) {
       onChange={handleChange}
       aria-label="Choose demo persona"
     >
-      {!known && <option value={String(accountId)}>📄 Your statement</option>}
+      {!known && <option value={String(accountId)}>✨ Your statement</option>}
       {accounts.map((a) => {
         const id = a.id ?? a.account_id;
         return (
           <option key={id} value={String(id)}>
-            {EMOJI[a.persona] ?? "📄"} {a.name}
+            {emojiFor(a)} {a.name}
           </option>
         );
       })}
