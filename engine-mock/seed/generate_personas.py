@@ -16,13 +16,13 @@ CASH_MCC = 6011
 NO_MCC_CHANCE = 0.05  # 5% of purchases have no MCC, to test keyword matching
 
 
-def load_inputs() -> tuple[dict, list]:
+def load_inputs() -> tuple[dict, list]: # reads the peoole and transcation  
     personas = json.loads((SEED_DIR / "personas.json").read_text())
     merchants = json.loads((SEED_DIR / "merchants.json").read_text())
     return personas, merchants
 
 
-def month_list(end: str, months: int) -> list[tuple[int, int]]:
+def month_list(end: str, months: int) -> list[tuple[int, int]]: #makes the list ofmonths to cover, oldest first
     """Return (year, month) pairs, oldest first, ending at `end` ("YYYY-MM")."""
     year, month = map(int, end.split("-"))
     result = []
@@ -36,7 +36,7 @@ def month_list(end: str, months: int) -> list[tuple[int, int]]:
 
 
 def random_day(year: int, month: int, rng: random.Random, weekdays_only: bool = False) -> date:
-    days_in_month = calendar.monthrange(year, month)[1]
+    days_in_month = calendar.monthrange(year, month)[1] #picks a random day in a month
     while True:
         day = date(year, month, rng.randint(1, days_in_month))
         if not weekdays_only or day.weekday() < 5:
@@ -44,7 +44,7 @@ def random_day(year: int, month: int, rng: random.Random, weekdays_only: bool = 
 
 
 def make_txn(account_id, day: date, merchant: str, mcc, pounds: float) -> dict:
-    """pounds is negative for money out, positive for money in."""
+    """pounds is negative for money out, positive for money in.""" #build one transcation, account, date shop, card code, amount of peace
     return {
         "account_id": account_id,
         "date": day.isoformat(),
@@ -55,8 +55,8 @@ def make_txn(account_id, day: date, merchant: str, mcc, pounds: float) -> dict:
 
 def purchases_for_budget(budget: float, shops: list, rng: random.Random) -> list[tuple[dict, float]]:
     """Split one month's budget for one category into individual purchases."""
-    target = budget * rng.uniform(0.85, 1.15)  # spend varies a bit month to month
-    spent = 0.0
+    target = budget * rng.uniform(0.85, 1.15)  # Splits one category’s monthly budget into separate purchases at random shops.
+    spent = 0.0   #varies eveythong month, spending 
     result = []
     while target - spent >= 1:
         shop = rng.choice(shops)
@@ -68,7 +68,7 @@ def purchases_for_budget(budget: float, shops: list, rng: random.Random) -> list
 
 def generate_for_persona(persona: dict, merchants: list, months: int, rng: random.Random, end: str) -> list[dict]:
     """Return a list of Transaction dicts for one persona."""
-    shops_by_division = {}
+    shops_by_division = {} #Makes all 24 months of transactions for one person:
     for shop in merchants:
         if shop["mcc"] == RENT_MCC:
             continue  # rent is added separately on the 1st
@@ -112,7 +112,7 @@ def generate_for_persona(persona: dict, merchants: list, months: int, rng: rando
     return txns
 
 
-def main() -> None:
+def main() -> None: #Runs everything: reads the terminal options, loops over the 4 people
     parser = argparse.ArgumentParser()
     parser.add_argument("--months", type=int, default=MONTHS)
     parser.add_argument("--seed", type=int, default=42, help="Same seed = same data every time")
@@ -143,5 +143,5 @@ def main() -> None:
     print(f"Wrote {len(transactions)} transactions for {len(accounts)} personas to {OUTPUT}")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": #Only runs main() when you start this file directly.
     main()
