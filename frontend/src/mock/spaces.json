@@ -1,9 +1,9 @@
 {
-  "_note": "FAKE. Agree the real shape of GET /accounts/{id}/spaces with Person 1 and update this.",
+  "_note": "FAKE. Shape matches GET /accounts/{id}/spaces in backend/app/routes/bank.py.",
   "spaces": [
-    { "id": "space_001", "account_id": "acc_student", "name": "Inflation-proof savings", "balance_pence": 50000 }
+    { "id": "space_001", "account_id": "1", "name": "Inflation-proof savings", "balance_pence": 50000 }
   ],
   "standing_orders": [
-    { "id": "so_001", "account_id": "acc_student", "space_id": "space_001", "amount_pence": 230, "frequency": "monthly", "next_run_date": "2026-11-01" }
+    { "id": "so_001", "account_id": "1", "space_id": "space_001", "amount_pence": 230, "frequency": "monthly", "reference": "Meflation top-up", "next_run_date": "2026-10-30" }
   ]
 }

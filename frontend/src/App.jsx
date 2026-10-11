@@ -14,7 +14,7 @@ import SpacesPanel from "./components/SpacesPanel.jsx";
 import SourceFooter from "./components/SourceFooter.jsx";
 
 export default function App() {
-  const [accountId, setAccountId] = useState("acc_student");
+  const [accountId, setAccountId] = useState("1"); // the student renter in the seed data
 
   return (
     <div className="app">

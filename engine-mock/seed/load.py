@@ -30,6 +30,12 @@ def reset_and_load(seed_file: Path = SEED_FILE) -> dict:
     """
     init_db()
     data = json.loads(seed_file.read_text())
+    # The generator numbers its ids (1, 2, ...); the Engine stores ids as text ("1", "2", ...)
+    for row in data["accounts"]:
+        row["id"] = str(row["id"])
+    for row in data["transactions"]:
+        row["id"] = str(row["id"])
+        row["account_id"] = str(row["account_id"])
     # model_validate (not Model(**row)) so "YYYY-MM-DD" strings become dates
     accounts = [Account.model_validate(row) for row in data["accounts"]]
     transactions = [Transaction.model_validate(row) for row in data["transactions"]]
