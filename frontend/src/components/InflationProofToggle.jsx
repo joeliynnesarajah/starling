@@ -8,6 +8,25 @@ import { getInflationProof, getPersonalRate, setInflationProof } from "../api.js
 
 const pounds = (pence) => `£${(pence / 100).toFixed(2)}`;
 
+// A little stack of coins with a heart, drawn in the same style as the piggy
+function CoinStack() {
+  return (
+    <svg viewBox="0 0 90 90" width="84" aria-hidden="true">
+      <g stroke="#4a2c2a" strokeWidth="3.5">
+        <ellipse cx="42" cy="74" rx="32" ry="10" fill="#ffe17a" />
+        <rect x="10" y="62" width="64" height="12" fill="#ffe17a" stroke="none" />
+        <path d="M10 62v12M74 62v12" />
+        <ellipse cx="42" cy="62" rx="32" ry="10" fill="#ffe17a" />
+        <rect x="10" y="50" width="64" height="12" fill="#ffe17a" stroke="none" />
+        <path d="M10 50v12M74 50v12" />
+        <ellipse cx="42" cy="50" rx="32" ry="10" fill="#ffe17a" />
+        <path d="M42 36c-6-4-10-7-10-11 0-3 2-5 5-5 2 0 4 1 5 3 1-2 3-3 5-3 3 0 5 2 5 5 0 4-4 7-10 11z" fill="#e8336d" />
+      </g>
+      <text x="70" y="22" fontSize="18" fill="#4a2c2a">✦</text>
+    </svg>
+  );
+}
+
 export default function InflationProofToggle({ accountId }) {
   const [enabled, setEnabled] = useState(false);
   const [topUp, setTopUp] = useState(null); // amount in pence: the active standing order if on, else the suggestion
@@ -71,7 +90,9 @@ export default function InflationProofToggle({ accountId }) {
   const showButton = topUp !== null && (topUp > 0 || enabled);
 
   return (
-    <section className="card">
+    <section className="card" style={{ display: "flex", gap: 24, alignItems: "center" }}>
+      <CoinStack />
+      <div style={{ flex: 1 }}>
       <h2>Inflation-proof my savings</h2>
 
       {topUp === null && !error && <p>Loading…</p>}
@@ -80,23 +101,17 @@ export default function InflationProofToggle({ accountId }) {
 
       {showButton && (
         <>
-          <p style={{ marginTop: 0 }}>
-            {enabled
-              ? `On: ${pounds(topUp)} moves into your Inflation-proof Space every month.`
-              : `Add ${pounds(topUp)} a month so your savings keep their value at your rate.`}
+          <p style={{ marginTop: 0, fontWeight: 600, lineHeight: 1.6 }}>
+            {enabled ? (
+              <>On: <span className="highlight">{pounds(topUp)} a month</span> moves into your Inflation-proof Space.</>
+            ) : (
+              <>Add <span className="highlight">{pounds(topUp)} a month</span> so your savings keep their value at your rate.</>
+            )}
           </p>
           <button
+            className={enabled ? "btn btn-outline" : "btn"}
             onClick={toggle}
             disabled={saving}
-            style={{
-              padding: "10px 18px",
-              borderRadius: 999,
-              border: "none",
-              cursor: saving ? "wait" : "pointer",
-              fontWeight: 600,
-              color: "white",
-              background: enabled ? "var(--muted)" : "var(--accent)",
-            }}
           >
             {saving ? "Saving…" : enabled ? "Turn off" : "Turn on"}
           </button>
@@ -104,6 +119,7 @@ export default function InflationProofToggle({ accountId }) {
       )}
 
       {error && <p style={{ color: "var(--bad)" }}>Something went wrong: {error}</p>}
+      </div>
     </section>
   );
 }

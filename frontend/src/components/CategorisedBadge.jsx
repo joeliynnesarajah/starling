@@ -1,6 +1,7 @@
 // Owner: Person 2
 // "94% of your spending categorised" so judges can see the mapping is honest.
 // Data: getCategorisedSummary(accountId) -> categorised_pence / spend_pence etc.
+// Styled as a slightly tilted receipt with an "Honest mapping" stamp.
 
 import { useEffect, useState } from "react";
 import { getCategorisedSummary } from "../api.js";
@@ -8,6 +9,15 @@ import { getCategorisedSummary } from "../api.js";
 // Turn pence into "£1,234.56"
 const pounds = (pence) =>
   (pence / 100).toLocaleString("en-GB", { style: "currency", currency: "GBP" });
+
+// The receipt lines, in order: [label, key in by_method]
+const METHOD_ROWS = [
+  ["By card code", "mcc"],
+  ["By shop name", "keyword"],
+  ["By bank label", "bank_category"],
+  ["By AI", "llm"],
+  ["Unknown", "unmapped"],
+];
 
 export default function CategorisedBadge({ accountId }) {
   const [summary, setSummary] = useState(null); // the numbers from the backend
@@ -22,8 +32,8 @@ export default function CategorisedBadge({ accountId }) {
       .catch(() => setError("Couldn't load the summary"));
   }, [accountId]);
 
-  if (error) return <section className="card" style={styles.card}>{error}</section>;
-  if (!summary) return <section className="card" style={styles.card}>Loading…</section>;
+  if (error) return <section className="card">{error}</section>;
+  if (!summary) return <section className="card">Loading…</section>;
 
   const spend = summary.spend_pence ?? 0;
   const categorised = summary.categorised_pence ?? 0;
@@ -34,41 +44,71 @@ export default function CategorisedBadge({ accountId }) {
   const pctText = pct >= 99.95 ? "100%" : `${pct.toFixed(1)}%`;
 
   return (
-    <section className="card" style={styles.card}>
-      <div style={styles.tag}>✓ HONEST MAPPING</div>
-      <h3 style={styles.title}>How much we could categorise</h3>
-      <div style={styles.big}>{pctText}</div>
-      <p style={styles.text}>
+    <section className="card receipt">
+      <span className="receipt-stamp" aria-hidden="true">
+        HONEST
+        <br />
+        MAPPING
+      </span>
+
+      <h2>How much we could categorise</h2>
+      <div className="receipt-big">{pctText}</div>
+      <p className="receipt-text">
         {pounds(categorised)} of {pounds(spend)} spending sorted into the 12 ONS categories.
       </p>
-      <p style={styles.small}>
-        {methods.mcc ?? 0} by card code · {methods.keyword ?? 0} by shop name ·{" "}
-        {methods.bank_category ?? 0} by bank label · {methods.llm ?? 0} by AI ·{" "}
-        {methods.unmapped ?? 0} unknown
-      </p>
+
+      <div className="receipt-lines">
+        {METHOD_ROWS.map(([label, key]) => (
+          <div className="receipt-line" key={key}>
+            <span>{label}</span>
+            <span className="receipt-dots" />
+            <span>{(methods[key] ?? 0).toLocaleString("en-GB")}</span>
+          </div>
+        ))}
+      </div>
+
+      <style>{`
+        .receipt {
+          transform: rotate(-1.2deg);
+          border-radius: 6px;
+          padding-right: 150px;
+        }
+        .receipt h2 { font-size: 1.5rem; }
+        .receipt-stamp {
+          position: absolute; top: 26px; right: 26px;
+          width: 104px; height: 104px;
+          border: 3px dashed var(--pink);
+          border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          text-align: center;
+          color: var(--pink);
+          font-family: "Fredoka", sans-serif;
+          font-weight: 700; font-size: 0.85rem; letter-spacing: 1.5px; line-height: 1.2;
+          transform: rotate(-14deg);
+        }
+        .receipt-big {
+          font-family: "Fredoka", sans-serif;
+          font-weight: 700;
+          font-size: clamp(3rem, 7vw, 4.5rem);
+          line-height: 1;
+          color: var(--pink);
+        }
+        .receipt-text { font-weight: 600; margin: 10px 0 14px; }
+        .receipt-lines {
+          border-top: 3px dotted var(--ink);
+          padding-top: 12px;
+          margin-right: -120px;
+          display: flex; flex-direction: column; gap: 8px;
+          font-weight: 700; font-size: 0.95rem;
+        }
+        .receipt-line { display: flex; align-items: baseline; gap: 6px; }
+        .receipt-dots { flex: 1; border-bottom: 2px dotted #c9a9a6; transform: translateY(-4px); }
+        @media (max-width: 760px) {
+          .receipt { padding-right: 20px; }
+          .receipt-stamp { position: static; margin-bottom: 10px; }
+          .receipt-lines { margin-right: 0; }
+        }
+      `}</style>
     </section>
   );
 }
-
-// Styling to match the penny. design
-const styles = {
-  card: {
-    background: "#f3efff",
-    border: "1px solid #e6defd",
-    borderRadius: 22,
-    padding: "22px 23px",
-  },
-  tag: {
-    display: "inline-block",
-    borderRadius: 12,
-    background: "#e8e0ff",
-    color: "#6d59d8",
-    fontSize: 11,
-    fontWeight: 800,
-    padding: "7px 10px",
-  },
-  title: { fontFamily: "Outfit, sans-serif", fontSize: 18, margin: "12px 0 4px", color: "#292843" },
-  big: { fontFamily: "Outfit, sans-serif", fontSize: 40, fontWeight: 800, color: "#745cde", letterSpacing: -1.4 },
-  text: { fontSize: 12, color: "#6d618d", margin: "4px 0 8px" },
-  small: { fontSize: 11, color: "#9996a7", margin: 0 },
-};
