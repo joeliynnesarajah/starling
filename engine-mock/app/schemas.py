@@ -20,7 +20,7 @@ class TransactionIn(BaseModel):
     mcc: Optional[str] = None
     amount_pence: int
     currency: str = "GBP"
-
+    bank_category: Optional[str] = None  # the bank's own label from a CSV upload
 
 class BulkTransactions(BaseModel):
     transactions: list[TransactionIn]

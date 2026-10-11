@@ -27,7 +27,8 @@ class Transaction(SQLModel, table=True):
     mcc: Optional[str] = None  # None for transfers and some CSV imports
     amount_pence: int  # negative = money out, positive = money in
     currency: str = "GBP"
-
+    bank_category: Optional[str] = None  # the bank's own label from a CSV upload, e.g. "GROCERIES"
+    
 # A Starling 'Space' is like a labelled pot inside your main account like "Holiday"
 class Space(SQLModel, table=True):
     id: str = Field(primary_key=True)
