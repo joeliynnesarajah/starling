@@ -8,7 +8,7 @@ from pathlib import Path
 SEED_DIR = Path(__file__).resolve().parent
 OUTPUT = SEED_DIR / "generated" / "transactions.json"
 MONTHS = 24
-END_MONTH = "2026-09"  # last month of data; fixed so the data never changes
+END_MONTH = "2026-01"  # last month of data; fixed so the data never changes
 
 RENT_MCC = 6513
 TRANSFER_MCC = 4829
