@@ -35,11 +35,42 @@ const post = (path, body) =>
 
 export const getAccounts = () => (USE_MOCK ? fake(mockAccounts) : request("/accounts"));
 
+// Fake mode keeps its own copy of the Spaces so "Simulate next month" visibly works.
+// Same rules as the Engine, minus the balance check. Resets on page refresh.
+const mockBank = { today: "2026-01-31", ...structuredClone(mockSpaces) };
+
+// "2026-01-31" -> "2026-02-28": same day next month, clamped like the Engine's add_month
+function addMonth(iso) {
+  const [y, m, d] = iso.split("-").map(Number);
+  const [year, month] = m === 12 ? [y + 1, 1] : [y, m + 1];
+  const lastDay = new Date(year, month, 0).getDate();
+  return `${year}-${String(month).padStart(2, "0")}-${String(Math.min(d, lastDay)).padStart(2, "0")}`;
+}
+
+function fakeNextMonth() {
+  mockBank.today = addMonth(mockBank.today);
+  const ran = [];
+  for (const order of mockBank.standing_orders) {
+    if (order.next_run_date > mockBank.today) continue;
+    mockBank.spaces.find((s) => s.id === order.space_id).balance_pence += order.amount_pence;
+    ran.push({ standing_order_id: order.id, space_id: order.space_id, amount_pence: order.amount_pence });
+    while (order.next_run_date <= mockBank.today) order.next_run_date = addMonth(order.next_run_date);
+  }
+  return { today: mockBank.today, ran };
+}
+
 export const getSpaces = (accountId) =>
-  USE_MOCK ? fake(mockSpaces) : request(`/accounts/${accountId}/spaces`);
+  USE_MOCK
+    ? fake(
+        structuredClone({
+          spaces: mockBank.spaces.filter((s) => s.account_id === String(accountId)),
+          standing_orders: mockBank.standing_orders.filter((o) => o.account_id === String(accountId)),
+        }),
+      )
+    : request(`/accounts/${accountId}/spaces`);
 
 export const simulateNextMonth = () =>
-  USE_MOCK ? fake({ today: "2026-11-01", ran: [] }) : post("/simulate/next-month", {});
+  USE_MOCK ? fake(fakeNextMonth()) : post("/simulate/next-month", {});
 
 // --- Person 2 -------------------------------------------------------------
 
