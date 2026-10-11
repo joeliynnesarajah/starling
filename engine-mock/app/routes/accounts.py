@@ -9,6 +9,10 @@ from app.schemas import AccountCreate
 
 router = APIRouter(tags=["accounts"])
 
+# Used when an uploaded statement has no balance column. With £0 the
+# inflation-proof top-up would always be £0.
+UPLOAD_DEMO_BALANCE_PENCE = 100_000  # £1,000
+
 
 @router.get("/accounts", response_model=list[Account])
 def list_accounts(session: Session = Depends(get_session)):
@@ -23,7 +27,9 @@ def create_account(body: AccountCreate, session: Session = Depends(get_session))
         id=next_id(session, Account, "acc_upload_"),
         name=body.name,
         persona=body.persona,
-        balance_pence=0,
+        balance_pence=(
+            body.balance_pence if body.balance_pence is not None else UPLOAD_DEMO_BALANCE_PENCE
+        ),
     )
     session.add(account)
     session.commit()

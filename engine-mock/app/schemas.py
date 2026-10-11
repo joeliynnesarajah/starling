@@ -31,6 +31,7 @@ class AccountCreate(BaseModel):
 
     name: str
     persona: str = "uploaded"
+    balance_pence: Optional[int] = None  # closing balance from the statement, if it has one
 
 
 class SpaceCreate(BaseModel):

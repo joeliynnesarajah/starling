@@ -7,6 +7,10 @@ Chain for /personal-rate:
     -> categorise.categorise                 (Person 2)
     -> ons.service.get_all_rates             (Person 3)
     -> calc.weights / personal_rate / top_up / explain  (Person 4)
+
+Weights use the person's latest 12 months of spending, even if that is newer
+than the latest month ONS has published. Rates always come from the latest
+ONS month. So an uploaded statement from this year still works.
 """
 
 from fastapi import APIRouter, HTTPException
@@ -38,11 +42,20 @@ def load_data(account_id: str):
     return categorised, summary, all_rates, month
 
 
+def latest_spending_month(categorised, fallback: str) -> str:
+    """The newest month with categorised spending, e.g. "2026-09".
+
+    Falls back to the ONS month if there's no categorised spending at all.
+    """
+    months = [t.date.strftime("%Y-%m") for t in categorised if t.division is not None]
+    return max(months) if months else fallback
+
+
 @router.get("/personal-rate", response_model=PersonalRate)
 def get_personal_rate(account_id: str):
     categorised, summary, all_rates, month = load_data(account_id)
 
-    # ONS rates for this month only (same as in history.py)
+    # ONS rates for the latest ONS month only (same as in history.py)
     headline = all_rates["headline"][month]
     division_rates = {
         code: rates.get(month)
@@ -50,17 +63,23 @@ def get_personal_rate(account_id: str):
         if code != "headline"
     }
 
-    weights = spending_weights(categorised, month)
+    # Spending mix: this person's latest 12 months, which may be newer than ONS
+    spend_end = latest_spending_month(categorised, month)
+    weights = spending_weights(categorised, spend_end)
+
     rows = weight_rows(weights, division_rates, headline)
     rate = personal_rate(rows)
 
     # Top-up based on the account balance
-    account = engine_client.get_account(account_id)
+    try:
+        account = engine_client.get_account(account_id)
+    except engine_client.EngineError as error:
+        raise HTTPException(502, f"Couldn't reach the bank: {error}")
     top_up = monthly_top_up_pence(account["balance_pence"], rate, settings.savings_interest_rate)
 
     return PersonalRate(
         account_id=account_id,
-        month=month,
+        month=spend_end,  # the headline card says "spending in the 12 months to ..."
         personal_rate=rate,
         headline_rate=headline,
         biggest_driver=biggest_driver(rows),
@@ -73,6 +92,8 @@ def get_personal_rate(account_id: str):
 
 @router.get("/personal-rate/history", response_model=PersonalHistory)
 def get_personal_history(account_id: str):
+    # The chart only covers months where ONS has published figures,
+    # so this one stays tied to the ONS month.
     categorised, _, all_rates, month = load_data(account_id)
     points = personal_rate_history(categorised, all_rates, month)
     return PersonalHistory(account_id=account_id, points=points)

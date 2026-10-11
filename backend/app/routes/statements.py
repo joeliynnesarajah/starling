@@ -4,13 +4,15 @@ from fastapi import APIRouter, HTTPException, UploadFile
 
 from app import engine_client
 from app.categorise.categorise import categorise
-from app.categorise.csv_import import parse_statement
+from app.categorise.csv_import import closing_balance_pence, parse_statement
 from app.schemas import CategorisationSummary, CategorisedTransaction, StatementImportResponse
 
 router = APIRouter(tags=["statements"])
 
-# The only fields the Engine mock stores for a transaction
-ENGINE_FIELDS = ("date", "merchant", "mcc", "amount_pence")
+# Fields we send to the Engine mock for each transaction.
+# bank_category is included so /personal-rate can use the bank's own category
+# later. If the Engine mock doesn't store it yet, it simply ignores the field.
+ENGINE_FIELDS = ("date", "merchant", "mcc", "amount_pence", "bank_category")
 
 
 def _get_transactions(account_id: str) -> list[dict]:
@@ -39,9 +41,11 @@ def categorisation_summary(account_id: str):
 async def upload_statement(file: UploadFile, account_name: str = "My statement"):
     """Parse the CSV, create an account for it in Engine, bulk insert, return the summary."""
 
-    # 1. Read the CSV with our parser
+    # 1. Read the file once, then parse it (the upload can only be read once)
+    file_bytes = await file.read()
     try:
-        rows = parse_statement(await file.read())
+        rows = parse_statement(file_bytes)
+        balance = closing_balance_pence(file_bytes)  # None if the CSV has no balance column
     except (ValueError, UnicodeDecodeError) as e:
         raise HTTPException(400, f"Couldn't read that file: {e}") from e
     if not rows:
@@ -52,11 +56,12 @@ async def upload_statement(file: UploadFile, account_name: str = "My statement")
         row["id"] = i
     _, summary = categorise(rows)
 
-    # 3. Create a new account in the Engine mock and save the transactions there
+    # 3. Create a new account in the Engine mock, starting at the statement's
+    #    closing balance, and save the transactions there
     try:
-        account = engine_client.create_account(account_name)
+        account = engine_client.create_account(account_name, balance_pence=balance)
         account_id = str(account["id"])
-        to_save = [{key: row[key] for key in ENGINE_FIELDS} for row in rows]
+        to_save = [{key: row.get(key) for key in ENGINE_FIELDS} for row in rows]
         inserted = engine_client.bulk_create_transactions(account_id, to_save)
     except engine_client.EngineError as e:
         raise HTTPException(502, str(e)) from e

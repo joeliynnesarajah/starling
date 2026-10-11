@@ -48,9 +48,13 @@ def get_accounts() -> list[dict]:
     return _request("GET", "/accounts")
 
 
-def create_account(name: str) -> dict:
-    """Used by Person 2's statement upload."""
-    return _request("POST", "/accounts", json={"name": name})
+
+def create_account(name: str, balance_pence: int | None = None) -> dict:
+    """Used by Person 2's statement upload. balance_pence comes from the CSV, if it has one."""
+    body = {"name": name}
+    if balance_pence is not None:
+        body["balance_pence"] = balance_pence
+    return _request("POST", "/accounts", json=body)
 
 
 def get_account(account_id: str) -> dict:

@@ -9,6 +9,7 @@ const pounds = (pence) => `£${(pence / 100).toFixed(2)}`;
 export default function InflationProofToggle({ accountId }) {
   const [enabled, setEnabled] = useState(false);
   const [topUp, setTopUp] = useState(null); // suggested amount, in pence
+  const [rate, setRate] = useState(null); // personal inflation rate, to explain a £0 top-up
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
@@ -16,9 +17,13 @@ export default function InflationProofToggle({ accountId }) {
   useEffect(() => {
     setEnabled(false);
     setTopUp(null);
+    setRate(null);
     setError(null);
     getPersonalRate(accountId)
-      .then((data) => setTopUp(data.suggested_monthly_top_up_pence))
+      .then((data) => {
+        setTopUp(data.suggested_monthly_top_up_pence);
+        setRate(data.personal_rate);
+      })
       .catch((e) => setError(e.message));
   }, [accountId]);
 
@@ -36,15 +41,22 @@ export default function InflationProofToggle({ accountId }) {
     }
   }
 
+  // Why the top-up might be £0. Only claim "interest beats inflation"
+  // when we actually have a rate; otherwise there's no spending to go on.
+  function zeroTopUpMessage() {
+    if (!rate) {
+      return "We need more spending history before we can suggest a top-up.";
+    }
+    return "No top-up needed right now. Either your savings interest beats your inflation rate, or there's nothing saved yet.";
+  }
+
   return (
     <section className="card">
       <h2>Inflation-proof my savings</h2>
 
       {topUp === null && !error && <p>Loading…</p>}
 
-      {topUp !== null && topUp === 0 && (
-        <p>Your savings interest already beats your inflation rate. Nothing to top up.</p>
-      )}
+      {topUp === 0 && <p style={{ marginTop: 0 }}>{zeroTopUpMessage()}</p>}
 
       {topUp !== null && topUp > 0 && (
         <>
