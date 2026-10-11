@@ -1,6 +1,6 @@
 {
   "_note": "FAKE PLACEHOLDER NUMBERS. Shape matches PersonalRate in backend/app/schemas.py. Never show these in the pitch.",
-  "account_id": "acc_student",
+  "account_id": "1",
   "month": "2026-08",
   "personal_rate": 0.061,
   "headline_rate": 0.038,

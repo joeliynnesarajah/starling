@@ -24,23 +24,37 @@ def _client() -> httpx.Client:
     return httpx.Client(base_url=settings.engine_url, timeout=5.0)
 
 
+def _request(method: str, path: str, **kwargs):
+    """Call the Engine mock and return its JSON (None for 204), or raise EngineError."""
+    try:
+        with _client() as client:
+            response = client.request(method, path, **kwargs)
+    except httpx.HTTPError as e:
+        raise EngineError(f"Can't reach the Engine mock at {settings.engine_url} ({e.__class__.__name__})") from e
+
+    if response.is_error:
+        try:
+            detail = response.json().get("detail", response.text)
+        except ValueError:
+            detail = response.text
+        raise EngineError(f"Engine mock: {method} {path} returned {response.status_code}: {detail}")
+    return None if response.status_code == 204 else response.json()
+
+
 # --- Accounts and transactions --------------------------------------------
 
 
 def get_accounts() -> list[dict]:
-    # TODO(Person 1): GET /accounts
-    raise NotImplementedError
+    return _request("GET", "/accounts")
 
 
 def create_account(name: str) -> dict:
     """Used by Person 2's statement upload."""
-    # TODO(Person 1): POST /accounts
-    raise NotImplementedError
+    return _request("POST", "/accounts", json={"name": name})
 
 
 def get_account(account_id: str) -> dict:
-    # TODO(Person 1): GET /accounts/{account_id}
-    raise NotImplementedError
+    return _request("GET", f"/accounts/{account_id}")
 
 
 def get_transactions(
@@ -48,57 +62,57 @@ def get_transactions(
     from_: Optional[dt.date] = None,
     to: Optional[dt.date] = None,
 ) -> list[dict]:
-    # TODO(Person 1): GET /transactions?account_id=&from=&to=
-    raise NotImplementedError
+    params = {"account_id": account_id}
+    if from_ is not None:
+        params["from"] = from_.isoformat()
+    if to is not None:
+        params["to"] = to.isoformat()
+    return _request("GET", "/transactions", params=params)
 
 
 def bulk_create_transactions(account_id: str, transactions: list[dict]) -> int:
     """Used by Person 2's CSV import. Returns the number inserted."""
-    # TODO(Person 1): POST /accounts/{account_id}/transactions/bulk
-    raise NotImplementedError
+    body = _request("POST", f"/accounts/{account_id}/transactions/bulk", json={"transactions": transactions})
+    return body["inserted"]
 
 
 # --- Spaces and standing orders -------------------------------------------
 
 
 def get_spaces(account_id: str) -> list[dict]:
-    # TODO(Person 1): GET /spaces?account_id=
-    raise NotImplementedError
+    return _request("GET", "/spaces", params={"account_id": account_id})
 
 
 def create_space(account_id: str, name: str) -> dict:
-    # TODO(Person 1): POST /spaces
-    raise NotImplementedError
+    return _request("POST", "/spaces", json={"account_id": account_id, "name": name})
 
 
 def list_standing_orders(account_id: str) -> list[dict]:
-    # TODO(Person 1): GET /standing-orders?account_id=
-    raise NotImplementedError
+    return _request("GET", "/standing-orders", params={"account_id": account_id})
 
 
 def create_standing_order(account_id: str, space_id: str, amount_pence: int, reference: str) -> dict:
-    # TODO(Person 1): POST /standing-orders
-    raise NotImplementedError
+    return _request(
+        "POST",
+        "/standing-orders",
+        json={"account_id": account_id, "space_id": space_id, "amount_pence": amount_pence, "reference": reference},
+    )
 
 
 def delete_standing_order(standing_order_id: str) -> None:
-    # TODO(Person 1): DELETE /standing-orders/{id}
-    raise NotImplementedError
+    _request("DELETE", f"/standing-orders/{standing_order_id}")
 
 
 # --- Demo helpers -----------------------------------------------------------
 
 
 def get_today() -> dt.date:
-    # TODO(Person 1): GET /simulate/today
-    raise NotImplementedError
+    return dt.date.fromisoformat(_request("GET", "/simulate/today")["today"])
 
 
 def simulate_next_month() -> dict:
-    # TODO(Person 1): POST /simulate/next-month
-    raise NotImplementedError
+    return _request("POST", "/simulate/next-month")
 
 
 def reset() -> dict:
-    # TODO(Person 1): POST /admin/reset
-    raise NotImplementedError
+    return _request("POST", "/admin/reset")

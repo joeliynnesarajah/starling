@@ -8,30 +8,40 @@ mock directly. These endpoints just call engine_client and return the result.
 
 from fastapi import APIRouter, HTTPException
 
+from app import engine_client
+from app.engine_client import EngineError
+
 router = APIRouter(tags=["bank"])
+
+
+def _engine(call, *args):
+    """Run an engine_client call, turning EngineError into a 502 the frontend can show."""
+    try:
+        return call(*args)
+    except EngineError as e:
+        raise HTTPException(502, str(e))
 
 
 @router.get("/accounts")
 def accounts():
     """All accounts, for the persona switcher."""
-    # TODO(Person 1): return engine_client.get_accounts()
-    raise HTTPException(501, "Not implemented yet")
+    return _engine(engine_client.get_accounts)
 
 
 @router.get("/accounts/{account_id}/spaces")
 def spaces(account_id: str):
     """Spaces plus their standing orders, for the Spaces panel."""
-    # TODO(Person 1)
-    raise HTTPException(501, "Not implemented yet")
+    return {
+        "spaces": _engine(engine_client.get_spaces, account_id),
+        "standing_orders": _engine(engine_client.list_standing_orders, account_id),
+    }
 
 
 @router.post("/simulate/next-month")
 def simulate_next_month():
-    # TODO(Person 1): return engine_client.simulate_next_month()
-    raise HTTPException(501, "Not implemented yet")
+    return _engine(engine_client.simulate_next_month)
 
 
 @router.post("/admin/reset")
 def reset():
-    # TODO(Person 1): return engine_client.reset()
-    raise HTTPException(501, "Not implemented yet")
+    return _engine(engine_client.reset)

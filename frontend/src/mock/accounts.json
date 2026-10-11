@@ -1,6 +1,6 @@
 [
-  { "id": "acc_student", "name": "Priya, London student renter", "persona": "student", "balance_pence": 120000 },
-  { "id": "acc_commuter", "name": "Tom, commutes by car", "persona": "commuter", "balance_pence": 450000 },
-  { "id": "acc_parent", "name": "Aisha, parent of two", "persona": "parent", "balance_pence": 300000 },
-  { "id": "acc_retiree", "name": "Margaret, retired homeowner", "persona": "retiree", "balance_pence": 900000 }
+  { "id": "1", "name": "London student renter", "persona": "student_renter", "balance_pence": 80000 },
+  { "id": "2", "name": "Commuter who drives", "persona": "car_commuter", "balance_pence": 300000 },
+  { "id": "3", "name": "Family with two kids", "persona": "young_family", "balance_pence": 250000 },
+  { "id": "4", "name": "Retired homeowner", "persona": "retiree", "balance_pence": 1200000 }
 ]

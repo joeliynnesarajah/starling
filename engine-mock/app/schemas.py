@@ -1,6 +1,8 @@
 """Request bodies for the Mock Engine Core.
 
-Owner: Person 1
+API schemas are descriptions of what JSON your API will accept or send back.
+
+Joeliyn
 """
 
 import datetime as dt
@@ -10,7 +12,7 @@ from pydantic import BaseModel
 
 
 class TransactionIn(BaseModel):
-    """One transaction in a bulk import (used by Person 2's CSV importer)."""
+    """One transaction in a bulk import (used by Muntaha's CSV importer)."""
 
     id: Optional[str] = None  # generated if missing
     date: dt.date

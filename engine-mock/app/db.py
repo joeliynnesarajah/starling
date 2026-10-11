@@ -19,6 +19,7 @@ def init_db() -> None:
     """Create all tables if they don't exist yet."""
     from app import models  # noqa: F401  (registers the tables)
 
+    # the catch with this is that if you change a column in one of the tables you need to regenerate everything again (solution for now as only using demo data) or use Alembic (like Liquibase for Python users)
     SQLModel.metadata.create_all(engine)
 
 
