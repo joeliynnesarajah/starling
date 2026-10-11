@@ -214,6 +214,13 @@ meflation/
 
 ## Getting started
 
+From the repo root in three PowerShell terminals:
+
+Run .venv\Scripts\Activate.ps1; cd engine-mock; uvicorn app.main:app --reload --port 8001.
+Run .venv\Scripts\Activate.ps1; cd backend; uvicorn app.main:app --reload --port 8000.
+Run cd frontend; npm run dev.
+Then open http://localhost:5173.
+
 ### Prerequisites
 
 - Python 3.11 to 3.13 (3.14 is very new and some packages don't have prebuilt versions for it yet)
