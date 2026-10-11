@@ -47,7 +47,10 @@ export const getCategorisedSummary = (accountId) =>
   USE_MOCK ? fake(mockSummary) : request(`/categorised/summary?account_id=${accountId}`);
 
 export async function uploadStatement(file, accountName) {
-  // TODO(Person 2): mock branch can return a fake StatementImportResponse
+  // Fake mode: pretend the upload worked, so we can build without the backend
+  if (USE_MOCK) {
+    return fake({ account_id: 5, inserted: 42, summary: mockSummary });
+  }
   const form = new FormData();
   form.append("file", file);
   return request(`/statements/upload?account_name=${encodeURIComponent(accountName)}`, {
