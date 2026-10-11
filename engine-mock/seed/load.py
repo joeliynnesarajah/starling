@@ -12,8 +12,7 @@ Usage (from engine-mock/):
 import json
 from pathlib import Path
 
-from sqlalchemy import delete
-from sqlmodel import Session
+from sqlmodel import Session, delete
 
 from app.db import engine, init_db
 from app.models import Account, Setting, Space, StandingOrder, Transaction
@@ -28,8 +27,8 @@ def reset_and_load(seed_file: Path = SEED_FILE) -> dict:
     Also set the simulated "today" (Setting key "today") to the latest
     transaction date. Returns {"accounts": n, "transactions": n}.
     """
-    init_db()
-    data = json.loads(seed_file.read_text())
+    init_db() 
+    data = json.loads(seed_file.read_text())  # reads json into a plain Python dict 
     # The generator numbers its ids (1, 2, ...); the Engine stores ids as text ("1", "2", ...)
     for row in data["accounts"]:
         row["id"] = str(row["id"])
@@ -37,13 +36,17 @@ def reset_and_load(seed_file: Path = SEED_FILE) -> dict:
         row["id"] = str(row["id"])
         row["account_id"] = str(row["account_id"])
     # model_validate (not Model(**row)) so "YYYY-MM-DD" strings become dates
+
+    # turns dicts into database objects 
     accounts = [Account.model_validate(row) for row in data["accounts"]]
     transactions = [Transaction.model_validate(row) for row in data["transactions"]]
 
+    # session is a working connection with the database
+    # a session exists per HTTP call 
     with Session(engine) as session:
         # Children before parents
         for model in (StandingOrder, Space, Transaction, Account, Setting):
-            session.execute(delete(model))
+            session.exec(delete(model))
         session.add_all(accounts)
         session.add_all(transactions)
         if transactions:
