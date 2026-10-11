@@ -4,6 +4,6 @@
     { "id": "space_001", "account_id": "1", "name": "Inflation-proof savings", "balance_pence": 50000 }
   ],
   "standing_orders": [
-    { "id": "so_001", "account_id": "1", "space_id": "space_001", "amount_pence": 230, "frequency": "monthly", "reference": "Meflation top-up", "next_run_date": "2026-10-30" }
+    { "id": "so_001", "account_id": "1", "space_id": "space_001", "amount_pence": 230, "frequency": "monthly", "reference": "Meflation top-up", "next_run_date": "2026-02-28" }
   ]
 }
