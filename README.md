@@ -91,10 +91,10 @@ Everyone owns a slice of the backend **and** the frontend components that displa
 
 | Who | Owns | Backend | Frontend |
 |---|---|---|---|
-| Person 1 _(name)_ | Mock Engine Core | `engine-mock/app/`, `seed/load.py`, `backend/app/engine_client.py`, `routes/bank.py` | `SpacesPanel` |
-| Person 2 _(name)_ | Data and categorisation | `seed/generate_personas.py` + JSON, `backend/app/categorise/`, `routes/statements.py` | `PersonaSwitcher`, `UploadStatement`, `CategorisedBadge` |
-| Person 3 _(name)_ | ONS pipeline and app shell | `backend/app/ons/`, `routes/inflation.py`, `main.py`, `config.py` | `App.jsx`, `styles.css`, `api.js`, `SourceFooter`, headline line on `HistoryChart` |
-| Person 4 _(name)_ | Calculation engine | `backend/app/calc/`, `routes/personal.py`, `routes/inflation_proof.py` | `HeadlineCard`, `BreakdownChart`, `InflationProofToggle`, personal line on `HistoryChart` |
+| Joeliyn | Mock Engine Core | `engine-mock/app/`, `seed/load.py`, `backend/app/engine_client.py`, `routes/bank.py` | `SpacesPanel` |
+| Muhata | Data and categorisation | `seed/generate_personas.py` + JSON, `backend/app/categorise/`, `routes/statements.py` | `PersonaSwitcher`, `UploadStatement`, `CategorisedBadge` |
+| Tomi | ONS pipeline and app shell | `backend/app/ons/`, `routes/inflation.py`, `main.py`, `config.py` | `App.jsx`, `styles.css`, `api.js`, `SourceFooter`, headline line on `HistoryChart` |
+| Lydia | Calculation engine | `backend/app/calc/`, `routes/personal.py`, `routes/inflation_proof.py` | `HeadlineCard`, `BreakdownChart`, `InflationProofToggle`, personal line on `HistoryChart` |
 
 Every file starts with a comment saying who owns it, and every unfinished piece is marked `TODO(Person N)`. To see your list:
 
@@ -352,17 +352,7 @@ Transfers, cash withdrawals and incoming payments are excluded and reported in t
 
 ---
 
-## Timeline
 
-| When | Goal |
-|---|---|
-| Day 1, first hour | Agree contracts, everyone can run their service |
-| Day 1, afternoon | Build individual parts against mock data |
-| Day 1, evening | Working end to end, even if it's ugly |
-| Day 2, morning | Real ONS data, polish, persona tuning |
-| Day 2, afternoon | **Code freeze.** Rehearse the demo at least twice |
-
----
 
 ## Limitations
 
